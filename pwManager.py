@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-# Password manager v1.1.2 Stable for Linux (SFL)
-# by CISCer
+# Password manager v1.1.1 Beta by CISCer
 import os
 import csv
 import base64
 import random
 import datetime
 import time
-
 
 
 # Colours
@@ -17,16 +15,12 @@ yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\
 try:
     import pyperclip
     import emoji
-    import stdiomask
 except ModuleNotFoundError:
     print(yellow + "... Wait ..." + mc)
     os.system("pip3 install pyperclip")
-    os.system("pip3 install emoji")
-    os.system("pip3 install stdiomask")
-    print(green + "Success" + mc)
-    time.sleep(1)
-    os.system("clear")
-
+    os.system("pip install emoji")
+    print(green + "--- Success ---" + mc)
+    os.system("python3 pwManager.py")
 
 # Emoji
 shit = emoji.emojize(":poop:", use_aliases=True)
@@ -118,7 +112,7 @@ def DecryptoBase64(encryption, key):
 
 def ClearTerminal():
     """ Очистка консоли """
-    os.system("clear")
+    print('\n'*100)
 
 
 def fuckingMakingFiles():
@@ -239,11 +233,11 @@ def PasswordGeneraton():
         password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
     return password_new
 
-ClearTerminal()
-print(blue, '\n' 'Password manager v1.1.2 Stable for Linux (SFL)' '\n' 'by CISCer' '\n', mc)  # Start text
+
+print(blue, '\n' 'Password manager v1.1.1 Beta' '\n' 'by CISCer' '\n', mc)  # Start text
 DateTime()
-time.sleep(1)
-print('\n'*5)
+time.sleep(3)
+ClearTerminal()
 
 
 def StartApp():
@@ -284,17 +278,17 @@ def StartApp():
         with open(file_date_base, encoding='utf-8') as data:
             s = 0
             reader = csv.DictReader(data, delimiter=',')
+            ClearTerminal()
             print('\n' + yellow + '--- Saved resources ---' + mc)
             for line in reader:
                 s += 1
                 print(str(s) + '.', line["resource"])
 
             print('\n' + blue + 'Enter "-r" to restart, "-x" to exit')  # A text prompting you to restart the program
-            print('Enter "-a", to add new resource')
-            print('Enter "-m", to send data by e-mail', mc)
+            print('Enter "-a", to add new resource', mc)
             while True:
                 password_new = ''  # Password
-                length = 24  # Amount
+                length = 21  # Amount
                 for pass_gen in range(length):
                     password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
 
@@ -304,12 +298,11 @@ def StartApp():
                     resource = input('Resource: ')
                     login = input('Login: ')
 
-                    pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption key
-                    pin = int(pin)
+                    pin = int(input('Key (6 numbers): '))  # Encryption key
                     key = pin // 10000
                     oper_key = pin % 10000
                     lister = AppendInLister(oper_key)
-                    key_word = stdiomask.getpass('Secure word: ', mask='*')
+                    key_word = input('Secure word: ')
 
                     print(green + '1' + yellow + ' - Generation new pas; ' +
                           green + '2' + yellow + ' - save your pas: ' + mc)
@@ -324,12 +317,12 @@ def StartApp():
                         ClearTerminal()
                         StartApp()
                     elif change == 2:
-                        password = stdiomask.getpass('Password: ')
+                        password = input('Password: ')
                         fuckingSavePassword(resource, login, password, key, lister, key_word)
                         ClearTerminal()
                         print(green + '- Your password ' +
                               password[0] +
-                              password[1] + '*****' +
+                              password[1] + '***' +
                               password[-1] + ' success saved -' + krokodil*3 + mc)
                         time.sleep(2)
                         ClearTerminal()
@@ -340,18 +333,8 @@ def StartApp():
                         ClearTerminal()
                         StartApp()
 
-                elif resource_number == "-m":
-                    user_email = input('Your e-mail: ')
-                    import smtplib
-                    my_email = smtplib.SMTP('smtp.mail.ru', 587)
-                    my_email.starttls()
-                    email = 'kolenkin.2020@mail.ru'
-                    my_email.login(email, 'h1KLk5TQpvMzz893')
-                    message = "Message"
-                    my_email.sendmail(email, user_email, message)
                 elif resource_number == '-x':  # Condition exit
                     ClearTerminal()  # Clearing terminal
-                    DateTime()
                     print(blue, '--- Program is closet ---' + '\n', mc)
                     quit()  # Exit
                 elif resource_number == '-r':  # Condition restart
@@ -370,9 +353,8 @@ def StartApp():
                             password = line["password"]
                             print('Selected resource:', green + resource + mc)
 
-                            master_password = stdiomask.getpass('\n''Secure word: ', mask='*')
-                            pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption
-                            pin = int(pin)
+                            pin = int(input('\n''Key (6 numbers): '))  # Encryption key
+                            master_password = input('Secure word: ')
                             key = pin // 10000
                             oper_key = pin % 10000
                             lister = AppendInLister(oper_key)
