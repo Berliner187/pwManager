@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-# Password manager v1.1.1 Beta by CISCer
+# Password manager v1.1.2 Stable for Linux (SFL)
+# by CISCer
 import os
 import csv
 import base64
 import random
 import datetime
 import time
+
 
 
 # Colours
@@ -15,12 +17,16 @@ yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\
 try:
     import pyperclip
     import emoji
+    import stdiomask
 except ModuleNotFoundError:
     print(yellow + "... Wait ..." + mc)
     os.system("pip3 install pyperclip")
-    os.system("pip install emoji")
-    print(green + "--- Success ---" + mc)
-    os.system("python3 pwManager.py")
+    os.system("pip3 install emoji")
+    os.system("pip3 install stdiomask")
+    print(green + "Success" + mc)
+    time.sleep(1)
+    os.system("clear")
+
 
 # Emoji
 shit = emoji.emojize(":poop:", use_aliases=True)
@@ -112,7 +118,7 @@ def DecryptoBase64(encryption, key):
 
 def ClearTerminal():
     """ Очистка консоли """
-    print('\n'*100)
+    os.system("clear")
 
 
 def fuckingMakingFiles():
@@ -233,11 +239,11 @@ def PasswordGeneraton():
         password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
     return password_new
 
-
-print(blue, '\n' 'Password manager v1.1.1 Beta' '\n' 'by CISCer' '\n', mc)  # Start text
-DateTime()
-time.sleep(3)
 ClearTerminal()
+print(blue, '\n' 'Password manager v1.1.2 Stable for Linux (SFL)' '\n' 'by CISCer' '\n', mc)  # Start text
+DateTime()
+time.sleep(1)
+print('\n'*5)
 
 
 def StartApp():
@@ -278,17 +284,17 @@ def StartApp():
         with open(file_date_base, encoding='utf-8') as data:
             s = 0
             reader = csv.DictReader(data, delimiter=',')
-            ClearTerminal()
             print('\n' + yellow + '--- Saved resources ---' + mc)
             for line in reader:
                 s += 1
                 print(str(s) + '.', line["resource"])
 
             print('\n' + blue + 'Enter "-r" to restart, "-x" to exit')  # A text prompting you to restart the program
+            print('Select resource by number')
             print('Enter "-a", to add new resource', mc)
             while True:
                 password_new = ''  # Password
-                length = 21  # Amount
+                length = 24  # Amount
                 for pass_gen in range(length):
                     password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
 
@@ -298,11 +304,12 @@ def StartApp():
                     resource = input('Resource: ')
                     login = input('Login: ')
 
-                    pin = int(input('Key (6 numbers): '))  # Encryption key
+                    pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption key
+                    pin = int(pin)
                     key = pin // 10000
                     oper_key = pin % 10000
                     lister = AppendInLister(oper_key)
-                    key_word = input('Secure word: ')
+                    key_word = stdiomask.getpass('Secure word: ', mask='*')
 
                     print(green + '1' + yellow + ' - Generation new pas; ' +
                           green + '2' + yellow + ' - save your pas: ' + mc)
@@ -317,12 +324,12 @@ def StartApp():
                         ClearTerminal()
                         StartApp()
                     elif change == 2:
-                        password = input('Password: ')
+                        password = stdiomask.getpass('Password: ')
                         fuckingSavePassword(resource, login, password, key, lister, key_word)
                         ClearTerminal()
                         print(green + '- Your password ' +
                               password[0] +
-                              password[1] + '***' +
+                              password[1] + '*****' +
                               password[-1] + ' success saved -' + krokodil*3 + mc)
                         time.sleep(2)
                         ClearTerminal()
@@ -335,6 +342,7 @@ def StartApp():
 
                 elif resource_number == '-x':  # Condition exit
                     ClearTerminal()  # Clearing terminal
+                    DateTime()
                     print(blue, '--- Program is closet ---' + '\n', mc)
                     quit()  # Exit
                 elif resource_number == '-r':  # Condition restart
@@ -353,8 +361,9 @@ def StartApp():
                             password = line["password"]
                             print('Selected resource:', green + resource + mc)
 
-                            pin = int(input('\n''Key (6 numbers): '))  # Encryption key
-                            master_password = input('Secure word: ')
+                            master_password = stdiomask.getpass('\n''Secure word: ', mask='*')
+                            pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption
+                            pin = int(pin)
                             key = pin // 10000
                             oper_key = pin % 10000
                             lister = AppendInLister(oper_key)
