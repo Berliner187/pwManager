@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.1.2 Stable for Linux (SFL)
+# Password manager v1.1.2 Beta for Linux (SFL)
 # by CISCer
 import os
 import csv
@@ -240,7 +240,7 @@ def PasswordGeneraton():
     return password_new
 
 ClearTerminal()
-print(blue, '\n' 'Password manager v1.1.2 Stable for Linux (SFL)' '\n' 'by CISCer' '\n', mc)  # Start text
+print(blue, '\n' 'Password manager v1.1.2 Beta for Linux (SFL)' '\n' 'by CISCer' '\n', mc)  # Start text
 DateTime()
 time.sleep(1)
 print('\n'*5)
