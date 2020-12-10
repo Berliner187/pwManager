@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.1.2 Stable for Linux (SFL)
+# Password manager v1.1.3 Stable for Linux (SFL)
 # by CISCer
 import os
 import csv
@@ -9,20 +9,20 @@ import datetime
 import time
 
 
+
 # Colours
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
 
 
 try:
-    import pyperclip
     import emoji
     import stdiomask
 except ModuleNotFoundError:
     print(yellow + "... Wait ..." + mc)
-    os.system("pip3 install pyperclip")
     os.system("pip3 install emoji")
     os.system("pip3 install stdiomask")
-    print(green + "Success" + mc)
+    os.system("clear")
+    print(green + "-- Success! --" + mc)
     time.sleep(1)
     os.system("clear")
 
@@ -193,27 +193,10 @@ def DecryptoCaesar(password, key_caesar, lister):
 
 
 file_date_base = "files/.data.dat"
+check_file_date_base = os.path.exists(file_date_base)
 
 
-def fuckingSavePasswordWH(resource, login, password, key, lister, key_word):
-    """ Шифрование логина и пароля. Сохранение в csv-файл (если этого файла нет)"""
-    with open(file_date_base, mode="a", encoding='utf-8') as data:
-        fieldnames = ['resource', 'login', 'password']
-        writer = csv.DictWriter(data, fieldnames=fieldnames)
-        writer.writeheader()
-
-        crypto_base_log = CryptoBase64(login, key_word)
-        crypto_caesar_log = CryptoCaesar(crypto_base_log, key, lister)  # Next comes 3-pass encryption
-        crypto_base_log = text2bits(crypto_caesar_log)  # To binary view
-
-        crypto_base_pas = CryptoBase64(password, key_word)
-        crypto_caesar_pas = CryptoCaesar(crypto_base_pas, key, lister)  # Next comes 3-pass encryption
-        crypto_base_pas = text2bits(crypto_caesar_pas)  # To binary view
-
-        writer.writerow({'resource': resource, 'login': crypto_base_log, 'password': crypto_base_pas})
-
-
-def fuckingSavePassword(resource, login, password, key, lister, key_word):
+def SaveDataWithoutFieldnames(resource, login, password, key, lister, key_word):
     """ Шифрование логина и пароля. Сохранение в csv-файл (если этот файл есть) """
     with open(file_date_base, mode="a", encoding='utf-8') as data:
         fieldnames = ['resource', 'login', 'password']
@@ -232,31 +215,43 @@ def fuckingSavePassword(resource, login, password, key, lister, key_word):
 
 def PasswordGeneraton():
     """ Генерирование нового случайного пароля """
-    password_new = ''  # Password
-    length = 24  # Amount
-    for pass_gen in range(length):
-        password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
-    return password_new
+    pas_gen = ''  # Password
+    length = 21  # Amount
+    for pas_elem in range(length):
+        pas_gen += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
+    return pas_gen
 
 
-ClearTerminal()
-print(blue, '\n' 'Password manager v1.1.2 Stable for Linux (SFL)' '\n' 'by CISCer' '\n', mc)  # Start text
-DateTime()
-time.sleep(1)
-print('\n'*5)
-
-
-def StartApp():
+def MainFun():
     """ The main function responsible for the operation of the program """
 
     # Если файла нет, создание файла с ресурсами
-    if os.path.exists(file_date_base) == False:
-        print('\n', 'Сохраненных ресурсов нет. Добавьте их:')
+    if check_file_date_base == False:
+
+        def SaveDataWithFieldnames(resource, login, password, key, lister, key_word):
+            """ Шифрование логина и пароля. Сохранение в csv-файл (если этого файла нет)"""
+            with open(file_date_base, mode="a", encoding='utf-8') as data:
+                fieldnames = ['resource', 'login', 'password']
+                writer = csv.DictWriter(data, fieldnames=fieldnames)
+                writer.writeheader()
+
+                crypto_base_log = CryptoBase64(login, key_word)
+                crypto_caesar_log = CryptoCaesar(crypto_base_log, key, lister)  # Next comes 3-pass encryption
+                crypto_base_log = text2bits(crypto_caesar_log)  # To binary view
+
+                crypto_base_pas = CryptoBase64(password, key_word)
+                crypto_caesar_pas = CryptoCaesar(crypto_base_pas, key, lister)  # Next comes 3-pass encryption
+                crypto_base_pas = text2bits(crypto_caesar_pas)  # To binary view
+
+                writer.writerow({'resource': resource, 'login': crypto_base_log, 'password': crypto_base_pas})
+
+        print('\n', 'No resources saved. Add them:')
         resource = input('Resource: ')
         login = input('Login: ')
 
-        pin = int(input('Key (6 numbers): '))  # Encryption key
-        key_word = input('Secure word: ')
+        pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption key
+        key_word = stdiomask.getpass('Secure word: ', mask='*')
+        pin = int(pin)
         key = pin // 10000
         oper_key = pin % 10000
         lister = AppendInLister(oper_key)
@@ -264,22 +259,32 @@ def StartApp():
         print(green + '1' + yellow + ' - Generation new pas; ' + green + '2' + yellow + ' - save your pas: ' + mc)
 
         change = int(input('Change: '))
-        if change == 1:
+        if change == 1:  # Generation new password
             password = PasswordGeneraton()
-            fuckingSavePasswordWH(resource, login, password, key, lister, key_word)
-            print(green + 'Successfully saved' + mc)
-        elif change == 2:
-            password = input('Enter your password: ')
-            fuckingSavePasswordWH(resource, login, password, key, lister, key_word)
-            print(green + 'Successfully saved' + mc)
+            SaveDataWithFieldnames(resource, login, password, key, lister, key_word)
+            print('Your new password - ' + green + password + mc + ' - success saved' + krokodil * 3 + mc)
+            time.sleep(2)
+            ClearTerminal()
+            MainFun()
+        elif change == 2:  # Save user password
+            password = stdiomask.getpass('Password: ')
+            SaveDataWithFieldnames(resource, login, password, key, lister, key_word)
+            ClearTerminal()
+            print(green + '- Your password ' +
+                  password[0] +
+                  password[1] + '*******' +
+                  password[-1] + ' success saved -' + krokodil * 3 + mc)
+            time.sleep(2)
+            ClearTerminal()
+            MainFun()
         else:
             print(red + '-- Error, please, change again --' + mc)
             time.sleep(1)
             ClearTerminal()
-            StartApp()
+            MainFun()
 
     # Reader
-    if os.path.exists(file_date_base) == True:
+    if check_file_date_base == True:
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
         with open(file_date_base, encoding='utf-8') as data:
             s = 0
@@ -290,55 +295,50 @@ def StartApp():
                 print(str(s) + '.', line["resource"])
 
             print('\n' + blue + 'Enter "-r" to restart, "-x" to exit')  # A text prompting you to restart the program
-            print('Select resource by number')
-            print('Enter "-a", to add new resource', mc)
-            while True:
-                password_new = ''  # Password
-                length = 21  # Amount
-                for pass_gen in range(length):
-                    password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
+            print('Enter "-a", to add new resource')
+            print(yellow, 'Select resource by number', mc)
 
-                resource_number = input('\n''Input: ')
+            def ShowResources():
+                resource_number = input('\n''Change: ')
                 if resource_number == '-a':
-                    print('\n' + green + krokodil + '-- Add new resource --' + krokodil + mc)
+                    print('\n' + green + krokodil + ' -- Add new resource -- ' + krokodil + mc)
                     resource = input('Resource: ')
                     login = input('Login: ')
 
                     pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption key
+                    key_word = stdiomask.getpass('Secure word: ', mask='*')
                     pin = int(pin)
                     key = pin // 10000
                     oper_key = pin % 10000
                     lister = AppendInLister(oper_key)
-                    key_word = stdiomask.getpass('Secure word: ', mask='*')
 
-                    print(green + '1' + yellow + ' - Generation new pas; ' +
-                          green + '2' + yellow + ' - save your pas: ' + mc)
+                    print(green + '1' + yellow + ' - Generation new pas ' +
+                          green + '2' + yellow + ' - save your pas ' + mc)
+
                     change = int(input('Change: '))
-
-                    if change == 1:
-                        password = password_new
-                        fuckingSavePassword(resource, login, password, key, lister, key_word)
-                        print('Your new password - ' + green + password + mc + ' - success saved' + krokodil*3 + mc)
-                        pyperclip.copy(password)
-                        time.sleep(3)
+                    if change == 1:  # Generation new password
+                        password = PasswordGeneraton()
+                        SaveDataWithoutFieldnames(resource, login, password, key, lister, key_word)
+                        print('Your new password - ' + green + password + mc + ' - success saved' + krokodil * 3 + mc)
+                        time.sleep(2)
                         ClearTerminal()
-                        StartApp()
-                    elif change == 2:
+                        MainFun()
+                    elif change == 2:  # Save user password
                         password = stdiomask.getpass('Password: ')
-                        fuckingSavePassword(resource, login, password, key, lister, key_word)
+                        SaveDataWithoutFieldnames(resource, login, password, key, lister, key_word)
                         ClearTerminal()
                         print(green + '- Your password ' +
                               password[0] +
-                              password[1] + '*****' +
-                              password[-1] + ' success saved -' + krokodil*3 + mc)
+                              password[1] + '*******' +
+                              password[-1] + ' success saved -' + krokodil * 3 + mc)
                         time.sleep(2)
                         ClearTerminal()
-                        StartApp()
+                        MainFun()
                     else:
-                        print(red + shit + 'Error, please, change again' + shit + mc)
+                        print(red + '-- Error, please, change again --' + mc)
                         time.sleep(1)
                         ClearTerminal()
-                        StartApp()
+                        MainFun()
 
                 elif resource_number == '-x':  # Condition exit
                     ClearTerminal()  # Clearing terminal
@@ -347,8 +347,10 @@ def StartApp():
                     quit()  # Exit
                 elif resource_number == '-r':  # Condition restart
                     ClearTerminal()  # Clearing terminal
-                    print('\n''-- Restart --')  # Show message of restart
-                    StartApp()  # Start main function
+                    print('\n', green, '-- Restart --', mc)  # Show message of restart
+                    time.sleep(1)
+                    ClearTerminal()
+                    MainFun()  # Start main function
 
                 with open(file_date_base, encoding='utf-8') as profiles:
                     reader = csv.DictReader(profiles, delimiter=',')
@@ -361,33 +363,41 @@ def StartApp():
                             password = line["password"]
                             print('Selected resource:', green + resource + mc)
 
-                            master_password = stdiomask.getpass('\n''Secure word: ', mask='*')
-                            pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption
+                            pin = stdiomask.getpass('\n''Key (6 numbers): ', mask='*')  # Encryption key
+                            master_password = stdiomask.getpass('Secure word: ', mask='*')  # Encryption word
                             pin = int(pin)
                             key = pin // 10000
                             oper_key = pin % 10000
                             lister = AppendInLister(oper_key)
 
-                            decrypto_bin_log = bits2text(login)
-                            decrypto_caesar_log = DecryptoCaesar(decrypto_bin_log, key, lister)
-                            decrypto_base_log = DecryptoBase64(decrypto_caesar_log, master_password)
+                            # Decoding login and password
+                            decryption_bin_log = bits2text(login)
+                            decryption_caesar_log = DecryptoCaesar(decryption_bin_log, key, lister)
+                            decryption_base_log = DecryptoBase64(decryption_caesar_log, master_password)
 
-                            decrypto_bin_pas = bits2text(password)
-                            decrypto_caesar_pas = DecryptoCaesar(decrypto_bin_pas, key, lister)
-                            decrypto_base_pas = DecryptoBase64(decrypto_caesar_pas, master_password)
+                            decryption_bin_pas = bits2text(password)  # To binary view
+                            decryption_caesar_pas = DecryptoCaesar(decryption_bin_pas, key, lister)  # Next comes 3-pass encryption
+                            decryption_base_pas = DecryptoBase64(decryption_caesar_pas, master_password)
 
                             print('\n' +
                                   resource + ' --> ' +
-                                  green + decrypto_base_log + ' --> ' +
-                                  decrypto_base_pas + mc)
-                            pyperclip.copy(decrypto_base_pas)
+                                  green + decryption_base_log + ' --> ' +
+                                  decryption_base_pas + mc)
+                ShowResources()
+            ShowResources()
 
 
 if __name__ == '__main__':
     try:  # Running a program through an exception
-        StartApp()
+        ClearTerminal()
+        print(blue, '\n' 'Password manager v1.1.3 Stable for Linux (BFL)' '\n' 'by CISCer' '\n', mc)  # Start text
+        time.sleep(2)
+        ClearTerminal()
+        DateTime()
+        print('\n' * 5)
+        MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
-        print(red, '\n' + shit + '--- ValueError, program is restarted ---' + shit, mc)
+        print(red, '\n' + shit + ' --- ValueError, program is restarted --- ' + shit, mc)
         time.sleep(1.5)
         ClearTerminal()
-        StartApp()
+        MainFun()
