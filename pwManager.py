@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.1.2 Beta for Linux (SFL)
+# Password manager v1.1.2 Stable for Linux (SFL)
 # by CISCer
 import os
 import csv
@@ -7,7 +7,6 @@ import base64
 import random
 import datetime
 import time
-
 
 
 # Colours
@@ -239,8 +238,9 @@ def PasswordGeneraton():
         password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
     return password_new
 
+
 ClearTerminal()
-print(blue, '\n' 'Password manager v1.1.2 Beta for Linux (SFL)' '\n' 'by CISCer' '\n', mc)  # Start text
+print(blue, '\n' 'Password manager v1.1.2 Stable for Linux (SFL)' '\n' 'by CISCer' '\n', mc)  # Start text
 DateTime()
 time.sleep(1)
 print('\n'*5)
@@ -294,7 +294,7 @@ def StartApp():
             print('Enter "-a", to add new resource', mc)
             while True:
                 password_new = ''  # Password
-                length = 24  # Amount
+                length = 21  # Amount
                 for pass_gen in range(length):
                     password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
 
@@ -372,8 +372,8 @@ def StartApp():
                             decrypto_caesar_log = DecryptoCaesar(decrypto_bin_log, key, lister)
                             decrypto_base_log = DecryptoBase64(decrypto_caesar_log, master_password)
 
-                            decrypto_bin_pas = bits2text(password)  # To binary view
-                            decrypto_caesar_pas = DecryptoCaesar(decrypto_bin_pas, key, lister)  # Next comes 3-pass encryption
+                            decrypto_bin_pas = bits2text(password)
+                            decrypto_caesar_pas = DecryptoCaesar(decrypto_bin_pas, key, lister)
                             decrypto_base_pas = DecryptoBase64(decrypto_caesar_pas, master_password)
 
                             print('\n' +
@@ -383,10 +383,11 @@ def StartApp():
                             pyperclip.copy(decrypto_base_pas)
 
 
-try:  # Running a program through an exception
-    StartApp()
-except ValueError:  # With this error (not entered value), the program is restarted
-    print(red, '\n' + shit + '--- ValueError, program is restarted ---' + shit, mc)
-    time.sleep(1.5)
-    ClearTerminal()
-    StartApp()
+if __name__ == '__main__':
+    try:  # Running a program through an exception
+        StartApp()
+    except ValueError:  # With this error (not entered value), the program is restarted
+        print(red, '\n' + shit + '--- ValueError, program is restarted ---' + shit, mc)
+        time.sleep(1.5)
+        ClearTerminal()
+        StartApp()
