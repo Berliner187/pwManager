@@ -9,10 +9,8 @@ import datetime
 import time
 
 
-
 # Colours
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
-
 
 try:
     import emoji
@@ -25,7 +23,6 @@ except ModuleNotFoundError:
     print(green + "-- Success! --" + mc)
     time.sleep(1)
     os.system("clear")
-
 
 # Emoji
 shit = emoji.emojize(":poop:", use_aliases=True)
