@@ -12,10 +12,10 @@ import time
 # Colours
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
 
-try:
+try:    # Запуск стороннийх библиотек
     import emoji
     import stdiomask
-except ModuleNotFoundError:
+except ModuleNotFoundError:     # Установка сторонних библиотек
     print(yellow + "... Wait ..." + mc)
     os.system("pip3 install emoji")
     os.system("pip3 install stdiomask")
@@ -39,11 +39,11 @@ lyster_for_pas = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 
 
 def DateTime():
-    """ Фунция вывода времени суток """
+    """ Фунция вывода приветствия в зависимости от времени суток """
     self_name_file = "files/.self_name.dat"     # Файл с именем (никнеймом)
     if os.path.exists(self_name_file) == False:     # Создание файла с именем
         with open(self_name_file, "w") as self_name:
-            name = input(yellow + 'Your name or nickname: ' + mc)
+            name = input(yellow + '- Your name or nickname: ' + mc)
             self_name.write(name)
             self_name.close()
             DateTime()
@@ -82,19 +82,20 @@ def DateTime():
                     print(" ".join(seq))
 
 
-# Перевод в двоичный вид
 def text2bits(text, encoding='utf-8', errors='surrogatepass'):
+    """ Перевод в двоичный вид """
     bits = bin(int.from_bytes(text.encode(encoding, errors), 'big'))[2:]
     return bits.zfill(8 * ((len(bits) + 7) // 8))
 
 
-# Перевод из двоичного вида
 def bits2text(bits, encoding='utf-8', errors='surrogatepass'):
+    """ Перевод из двоичного вида """
     n = int(bits, 2)
     return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode(encoding, errors) or '\0'
 
 
 def CryptoBase64(message, key):
+    """ Шифрование на основе библиотеки base64 """
     enc = []
     for i in range(len(message)):
         key_c = key[i % len(key)]
@@ -104,6 +105,7 @@ def CryptoBase64(message, key):
 
 
 def DecryptoBase64(encryption, key):
+    """ Дешифрование на основе библиотеки base64 """
     dec = []
     message = base64.urlsafe_b64decode(encryption).decode()
     for i in range(len(message)):
@@ -133,18 +135,17 @@ def fuckingMakingFiles():
             listers.write(string)  # Recording an encrypted message
             listers.write('\n')  # Line break
             listers.close()  # Closing the file to save data
-    print(green, '-- RESTART --', '\n' * 100, mc)
+    print(green, '-- All right, program will restarted --', '\n' * 100, mc)
     time.sleep(1)
     ClearTerminal()
 
 
-listers_file = os.path.exists("files/.listers.dat")
-if listers_file == False:
+if os.path.exists("files/.listers.dat") == False:      # Создание файла с уникальными строками
     fuckingMakingFiles()
 
 
-# Добавление символов из файла в список
 def AppendInLister(oper_key):
+    """ Добавление символов из файла в список """
     lyster_shuffle = []  # Пустой список
     with open("files/.listers.dat") as file:  # Файл с рандомными
         s = 0  # Счетчик (по умолчанию 0)
@@ -156,8 +157,8 @@ def AppendInLister(oper_key):
     return lyster_shuffle
 
 
-# Encryption by Caesar
 def CryptoCaesar(password, key_caesar, lister):
+    """ Encryption based Caesar """
     first_message = ''
     second_message = ''
     third_message = ''
@@ -172,8 +173,9 @@ def CryptoCaesar(password, key_caesar, lister):
             (lister.index(c) - key_caesar) % len(lister)]  # Permutation to n-amount of third pass
     return third_message
 
-# Decryption by Caesar
+
 def DecryptoCaesar(password, key_caesar, lister):
+    """ Decryption based Caesar """
     first_message = ''
     second_message = ''
     third_message = ''
@@ -190,14 +192,16 @@ def DecryptoCaesar(password, key_caesar, lister):
 
 
 file_date_base = "files/.data.dat"
-check_file_date_base = os.path.exists(file_date_base)
+check_file_date_base = os.path.exists(file_date_base)    # Главный файл, где хранятся пароли
 
 
-def SaveDataWithoutFieldnames(resource, login, password, key, lister, key_word):
-    """ Шифрование логина и пароля. Сохранение в csv-файл (если этот файл есть) """
+def SaveDataToFile(resource, login, password, key, lister, key_word):
+    """ Шифрование логина и пароля. Сохранение в csv-файл (если этого файла нет)"""
     with open(file_date_base, mode="a", encoding='utf-8') as data:
         fieldnames = ['resource', 'login', 'password']
         writer = csv.DictWriter(data, fieldnames=fieldnames)
+        if check_file_date_base == False:
+            writer.writeheader()
 
         crypto_base_log = CryptoBase64(login, key_word)
         crypto_caesar_log = CryptoCaesar(crypto_base_log, key, lister)  # Next comes 3-pass encryption
@@ -216,31 +220,12 @@ def PasswordGeneraton():
     length = 21  # Amount
     for pas_elem in range(length):
         pas_gen += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
-    return pas_gen
+    return pas_gen      # Возвращает пароль
 
 
 def MainFun():
     """ The main function responsible for the operation of the program """
-
-    # Если файла нет, создание файла с ресурсами
-    if check_file_date_base == False:
-
-        def SaveDataWithFieldnames(resource, login, password, key, lister, key_word):
-            """ Шифрование логина и пароля. Сохранение в csv-файл (если этого файла нет)"""
-            with open(file_date_base, mode="a", encoding='utf-8') as data:
-                fieldnames = ['resource', 'login', 'password']
-                writer = csv.DictWriter(data, fieldnames=fieldnames)
-                writer.writeheader()
-
-                crypto_base_log = CryptoBase64(login, key_word)
-                crypto_caesar_log = CryptoCaesar(crypto_base_log, key, lister)  # Next comes 3-pass encryption
-                crypto_base_log = text2bits(crypto_caesar_log)  # To binary view
-
-                crypto_base_pas = CryptoBase64(password, key_word)
-                crypto_caesar_pas = CryptoCaesar(crypto_base_pas, key, lister)  # Next comes 3-pass encryption
-                crypto_base_pas = text2bits(crypto_caesar_pas)  # To binary view
-
-                writer.writerow({'resource': resource, 'login': crypto_base_log, 'password': crypto_base_pas})
+    if check_file_date_base == False:   # Если файла нет, идет создание файла с ресурсами
 
         print('\n', 'No resources saved. Add them:')
         resource = input('Resource: ')
@@ -258,14 +243,14 @@ def MainFun():
         change = int(input('Change: '))
         if change == 1:  # Generation new password
             password = PasswordGeneraton()
-            SaveDataWithFieldnames(resource, login, password, key, lister, key_word)
+            SaveDataToFile(resource, login, password, key, lister, key_word)
             print('Your new password - ' + green + password + mc + ' - success saved' + krokodil * 3 + mc)
             time.sleep(2)
             ClearTerminal()
             MainFun()
         elif change == 2:  # Save user password
             password = stdiomask.getpass('Password: ')
-            SaveDataWithFieldnames(resource, login, password, key, lister, key_word)
+            SaveDataToFile(resource, login, password, key, lister, key_word)
             ClearTerminal()
             print(green + '- Your password ' +
                   password[0] +
@@ -281,7 +266,7 @@ def MainFun():
             MainFun()
 
     # Reader
-    if check_file_date_base == True:
+    elif check_file_date_base == True:
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
         with open(file_date_base, encoding='utf-8') as data:
             s = 0
@@ -315,14 +300,14 @@ def MainFun():
                     change = int(input('Change: '))
                     if change == 1:  # Generation new password
                         password = PasswordGeneraton()
-                        SaveDataWithoutFieldnames(resource, login, password, key, lister, key_word)
+                        SaveDataToFile(resource, login, password, key, lister, key_word)
                         print('Your new password - ' + green + password + mc + ' - success saved' + krokodil * 3 + mc)
                         time.sleep(2)
                         ClearTerminal()
                         MainFun()
                     elif change == 2:  # Save user password
                         password = stdiomask.getpass('Password: ')
-                        SaveDataWithoutFieldnames(resource, login, password, key, lister, key_word)
+                        SaveDataToFile(resource, login, password, key, lister, key_word)
                         ClearTerminal()
                         print(green + '- Your password ' +
                               password[0] +
