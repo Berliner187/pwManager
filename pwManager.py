@@ -12,7 +12,11 @@ import time
 # Colours
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
 
+<<<<<<< HEAD
 try:    # Запуск стороннийх библиотек
+=======
+try:
+>>>>>>> c0c57c8c7576ca02a4ea965512b7df3fe7b6a967
     import emoji
     import stdiomask
 except ModuleNotFoundError:     # Установка сторонних библиотек
