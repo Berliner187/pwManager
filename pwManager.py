@@ -9,10 +9,8 @@ import datetime
 import time
 
 
-
 # Colours
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
-
 
 try:
     import emoji
@@ -25,7 +23,6 @@ except ModuleNotFoundError:
     print(green + "-- Success! --" + mc)
     time.sleep(1)
     os.system("clear")
-
 
 # Emoji
 shit = emoji.emojize(":poop:", use_aliases=True)
@@ -272,13 +269,13 @@ def MainFun():
             ClearTerminal()
             print(green + '- Your password ' +
                   password[0] +
-                  password[1] + '*****' +
+                  password[1] + '*******' +
                   password[-1] + ' success saved -' + krokodil * 3 + mc)
             time.sleep(2)
             ClearTerminal()
             MainFun()
         else:
-            print(red + '-- Error, please, change again --' + mc)
+            print(red + '-- Error of change, please, change again --' + mc)
             time.sleep(1)
             ClearTerminal()
             MainFun()
