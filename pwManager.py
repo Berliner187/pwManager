@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.1.3 Stable for Linux (SFL)
+# Password manager v1.1.4 Stable for Linux (SFL)
 # by CISCer
 import os
 import csv
@@ -12,11 +12,7 @@ import time
 # Colours
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
 
-<<<<<<< HEAD
 try:    # Запуск стороннийх библиотек
-=======
-try:
->>>>>>> c0c57c8c7576ca02a4ea965512b7df3fe7b6a967
     import emoji
     import stdiomask
 except ModuleNotFoundError:     # Установка сторонних библиотек
@@ -69,19 +65,19 @@ def DateTime():
                 time_format = (str(hour), str(minute), str(secunde))
                 time_now = ":".join(time_format)    # Форматирование в формат времени
 
-                if '04:00:00' <= time_now < '12:00:00':
+                if '04:00:00' <= time_now < '12:00:00':     # Condition morning
                     seq = (green, coffee, 'Good morning,', name, coffee, donut*3, mc)
                     print(" ".join(seq))
 
-                elif '12:00:00' <= time_now < '17:00:00':
+                elif '12:00:00' <= time_now < '17:00:00':   # Condition day
                     seq = (green, 'Good afternoon,', name, smile*3, relax*2, mc)
                     print(" ".join(seq))
 
-                elif '17:00:00' <= time_now <= '23:59:59':
+                elif '17:00:00' <= time_now <= '23:59:59':  # Condition evening
                     seq = (green, relax, 'Good evening,', name, sleep*2, mc)
                     print(" ".join(seq))
 
-                elif '00:00:00' <= time_now < '04:00:00':
+                elif '00:00:00' <= time_now < '04:00:00':   # Condition night
                     seq = (green, 'Good night,', name, moon*3, mc)
                     print(" ".join(seq))
 
@@ -218,10 +214,10 @@ def SaveDataToFile(resource, login, password, key, lister, key_word):
         writer.writerow({'resource': resource, 'login': crypto_base_log, 'password': crypto_base_pas})
 
 
-def password_generation():
+def password_generation(leng):
     """ Генерирование нового случайного пароля """
     pas_gen = ''  # Password
-    length = 21  # Amount
+    length = leng  # Amount
     for pas_elem in range(length):
         pas_gen += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
     return pas_gen      # Возвращает пароль
@@ -250,7 +246,8 @@ def MainFun():
 
         change = int(input('Change: '))
         if change == 1:  # Generation new password
-            password = password_generation()
+            length = int(input('Length password (number): '))
+            password = password_generation(length)
             SaveDataToFile(resource, login, password, key, lister, key_word)
             print('Your new password - ' + green + password + mc + ' - success saved' + krokodil * 3 + mc)
             time.sleep(2)
@@ -276,120 +273,125 @@ def MainFun():
     # Reader
     elif check_file_date_base == True:
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
-        with open(file_date_base, encoding='utf-8') as data:
-            s = 0
-            reader = csv.DictReader(data, delimiter=',')
-            print('\n' + yellow + '--- Saved resources ---' + mc)
-            for line in reader:
-                s += 1
-                print(str(s) + '.', line["resource"])
+        def ShowContent():
+            with open(file_date_base, encoding='utf-8') as data:
+                s = 0
+                reader = csv.DictReader(data, delimiter=',')
+                print('\n' + yellow + '--- Saved resources ---' + mc)
+                for line in reader:
+                    s += 1
+                    print(str(s) + '.', line["resource"])
 
-            print('\n' + blue + 'Enter "-r" to restart, "-x" to exit')  # A text prompting you to restart the program
-            print('Enter "-a", to add new resource')
-            print(yellow, 'Select resource by number', mc)
+                print(
+                    '\n' + blue + 'Enter "-r" to restart, "-x" to exit')  # A text prompting you to restart the program
+                print('Enter "-a", to add new resource')
+                print(yellow, 'Select resource by number', mc)
 
-            def ShowResources():
-                resource_number = input('\n''Change: ')
-                if resource_number == '-a':
-                    print('\n' + green + krokodil + ' -- Add new resource -- ' + krokodil + mc)
-                    resource = input('Resource: ')
-                    login = input('Login: ')
+        ShowContent()
 
-                    pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption key
-                    key_word = stdiomask.getpass('Secure word: ', mask='*')     # Encryption word
-                    pin = int(pin)
-                    key = pin // 10000      # Encryption key (First 2 numbers)  # For Caesar-based encryption
-                    oper_key = pin % 10000      # Encryption key (Last 4 numbers) for lister
-                    lister = AppendInLister(oper_key)       # Change row encryption
+        def ShowResources():
+            resource_number = input('\n''Change: ')
+            if resource_number == '-a':
+                print('\n' + green + krokodil + ' -- Add new resource -- ' + krokodil + mc)
+                resource = input('Resource: ')
+                login = input('Login: ')
 
-                    print(green + '1' + yellow + ' - Generation new pas\n' +
-                          green + '2' + yellow + ' - save your pas ' + mc)
+                pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption key
+                key_word = stdiomask.getpass('Secure word: ', mask='*')  # Encryption word
+                pin = int(pin)
+                key = pin // 10000  # Encryption key (First 2 numbers)  # For Caesar-based encryption
+                oper_key = pin % 10000  # Encryption key (Last 4 numbers) for lister
+                lister = AppendInLister(oper_key)  # Change row encryption
 
-                    change = int(input('Change: '))
-                    if change == 1:  # Generation new password
-                        gen_password = password_generation()
-                        SaveDataToFile(resource, login, gen_password, key, lister, key_word)
-                        print('Your new password - ' + green + gen_password + mc + ' - success saved' + krokodil * 3 + mc)
-                        time.sleep(2)
-                        ClearTerminal()
-                        MainFun()
-                    elif change == 2:  # Save user password
-                        user_password = stdiomask.getpass('Password: ')
-                        SaveDataToFile(resource, login, user_password, key, lister, key_word)
-                        ClearTerminal()
-                        print(green + '- Your password ' +
-                              user_password[0] +
-                              user_password[1] + '*******' +
-                              user_password[-1] + ' success saved -' + krokodil * 3 + mc)
-                        time.sleep(2)
-                        ClearTerminal()
-                        MainFun()
-                    else:
-                        print(red + '-- Error, please, change again --' + mc)
-                        time.sleep(1)
-                        ClearTerminal()
-                        ShowResources()
+                print(green + '1' + yellow + ' - Generation new pas\n' +
+                      green + '2' + yellow + ' - save your pas ' + mc)
 
-                elif resource_number == '-x':  # Condition exit
-                    ClearTerminal()  # Clearing terminal
-                    DateTime()      # Displays completion message
-                    print(blue, '--- Program is closet ---' + '\n', mc)
-                    quit()  # Exit
-                elif resource_number == '-r':  # Condition restart
-                    ClearTerminal()  # Clearing terminal
-                    print('\n', green, '-- Restart --', mc)  # Show message of restart
+                change = int(input('Change: '))
+                if change == 1:  # Generation new password
+                    length = int(input('Length password (number): '))
+                    gen_password = password_generation(length)
+                    SaveDataToFile(resource, login, gen_password, key, lister, key_word)
+                    print('Your new password - ' + green + gen_password + mc + ' - success saved' + krokodil * 3 + mc)
+                    time.sleep(2)
+                    ClearTerminal()
+                    MainFun()
+                elif change == 2:  # Save user password
+                    user_password = stdiomask.getpass('Password: ')
+                    SaveDataToFile(resource, login, user_password, key, lister, key_word)
+                    ClearTerminal()
+                    print(green + '- Your password ' +
+                          user_password[0] +
+                          user_password[1] + '*******' +
+                          user_password[-1] + ' success saved -' + krokodil * 3 + mc)
+                    time.sleep(2)
+                    ClearTerminal()
+                    MainFun()
+                else:
+                    print(red + '-- Error, please, change again --' + mc)
                     time.sleep(1)
                     ClearTerminal()
-                    MainFun()  # Start main function
+                    ShowResources()
 
-                # Decryption mechanism
-                with open(file_date_base, encoding='utf-8') as profiles:
-                    reader = csv.DictReader(profiles, delimiter=',')
-                    count = 0
-                    for line in reader:     # Iterating over lines file
-                        count += 1
-                        if count == int(resource_number):
-                            resource = line["resource"]
-                            login = line["login"]
-                            password = line["password"]
-                            print('Selected resource:', green + resource + mc)
+            elif resource_number == '-x':  # Condition exit
+                ClearTerminal()  # Clearing terminal
+                DateTime()  # Displays completion message
+                print(blue, '--- Program is closet ---' + '\n', mc)
+                quit()  # Exit
+            elif resource_number == '-r':  # Condition restart
+                ClearTerminal()  # Clearing terminal
+                print('\n', green, '-- Restart --', mc)  # Show message of restart
+                time.sleep(1)
+                ClearTerminal()
+                MainFun()  # Start main function
 
-                            pin = stdiomask.getpass('\n''Key (6 numbers): ', mask='*')  # Encryption key
-                            master_password = stdiomask.getpass('Secure word: ', mask='*')  # Encryption word
-                            pin = int(pin)
-                            key = pin // 10000
-                            oper_key = pin % 10000
-                            lister = AppendInLister(oper_key)
+            # Decryption mechanism
+            with open(file_date_base, encoding='utf-8') as profiles:
+                reader = csv.DictReader(profiles, delimiter=',')
+                count = 0
+                for line in reader:  # Iterating over lines file
+                    count += 1
+                    if count == int(resource_number):
+                        ClearTerminal()
+                        ShowContent()
+                        resource = line["resource"]
+                        login = line["login"]
+                        password = line["password"]
+                        print('\nSelected resource:', green + resource + mc)
 
-                            # <--- Decoding login and password
+                        pin = stdiomask.getpass('\n''Key (6 numbers): ', mask='*')  # Encryption key
+                        master_password = stdiomask.getpass('Secure word: ', mask='*')  # Encryption word
+                        pin = int(pin)
+                        key = pin // 10000
+                        oper_key = pin % 10000
+                        lister = AppendInLister(oper_key)
 
-                            # 1st stage of encryption
-                            decryption_bin_log = bits2text(login)
-                            # 2nd stage of encryption
-                            decryption_caesar_log = DecryptoCaesar(decryption_bin_log, key, lister)
-                            # 3rd stage of encryption
-                            decryption_base_log = DecryptoBase64(decryption_caesar_log, master_password)
+                        # 1st stage of encryption
+                        decryption_bin_log = bits2text(login)
+                        # 2nd stage of encryption
+                        decryption_caesar_log = DecryptoCaesar(decryption_bin_log, key, lister)
+                        # 3rd stage of encryption
+                        decryption_base_log = DecryptoBase64(decryption_caesar_log, master_password)
 
-                            # 1st stage of encryption
-                            decryption_bin_pas = bits2text(password)
-                            # 2nd stage of encryption
-                            decryption_caesar_pas = DecryptoCaesar(decryption_bin_pas, key, lister)
-                            # 3rd stage of encryption
-                            decryption_base_pas = DecryptoBase64(decryption_caesar_pas, master_password)
+                        # 1st stage of encryption
+                        decryption_bin_pas = bits2text(password)
+                        # 2nd stage of encryption
+                        decryption_caesar_pas = DecryptoCaesar(decryption_bin_pas, key, lister)
+                        # 3rd stage of encryption
+                        decryption_base_pas = DecryptoBase64(decryption_caesar_pas, master_password)
 
-                            print('\n' +
-                                  resource + ' --> ' +
-                                  green + decryption_base_log + ' --> ' +
-                                  decryption_base_pas + mc)
-                ShowResources()     # Recursion
-            ShowResources()     # Start cycle
+                        print('\n' +
+                              resource + ' --> ' +
+                              green + decryption_base_log + ' --> ' +
+                              decryption_base_pas + mc)
+            ShowResources()  # Recursion
+        ShowResources()  # Start cycle
 
 
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password manager v1.1.3 Stable for Linux (BFL)' '\n' 'by CISCer' '\n', mc)  # Start text
-        time.sleep(2)
+        print(blue, '\n' 'Password manager v1.1.4 Stable for Linux (BFL)' '\n' 'by CISCer' '\n', mc)  # Start text
+        time.sleep(1)
         ClearTerminal()
         DateTime()
         print('\n' * 5)
