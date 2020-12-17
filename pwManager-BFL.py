@@ -111,14 +111,14 @@ def DateTime():
                     print(" ".join(seq))
 
 
-def AppendInLister(opt_key):
+def AppendInLister(additional_key):
     """ Добавление символов из файла в список для дальнейшего шифрования"""
     lyster_shuffle = []  # Пустой список
     with open("files/.listers.dat") as file:  # Файл с рандомными
         s = 0  # Счетчик (по умолчанию 0)
         for row in file:  # Перебор по строкам файла
             s += 1  # Счетчик увеличивается на 1
-            if s == opt_key:  # Если значение счетчика равно опер-ключу
+            if s == additional_key:  # Если значение счетчика равно опер-ключу
                 for syb in row:  # Перебор строки посимвольно
                     lyster_shuffle.append(syb)  # Добавление символов в ранее пустой список
     return lyster_shuffle
@@ -287,8 +287,8 @@ def DecryptionBlock():
         master_password = stdiomask.getpass(' Secure word: ', mask='*')  # Encryption word
         pin = int(pin)
         key = pin // 10000  # Encryption key (First 2 numbers)  # For Caesar-based encryption
-        oper_key = pin % 10000  # Encryption key (Last 4 numbers) for lister
-        lister = AppendInLister(oper_key)  # Change row encryption
+        additional_key = pin % 10000  # Encryption key (Last 4 numbers) for lister
+        lister = AppendInLister(additional_key)  # Change row encryption
 
         print(green + '1' + yellow + ' - Generation new pas\n' +
               green + '2' + yellow + ' - save your pas ' + mc)
@@ -326,8 +326,8 @@ def DecryptionBlock():
                 master_password = stdiomask.getpass('Secure word: ', mask='*')  # Encryption word
                 pin = int(pin)
                 key = pin // 10000  # Encryption key (First 2 numbers)  # For Caesar-based encryption
-                oper_key = pin % 10000  # Encryption key (Last 4 numbers) for lister
-                lister = AppendInLister(oper_key)  # Change row encryption
+                additional_key = pin % 10000  # Encryption key (Last 4 numbers) for lister
+                lister = AppendInLister(additional_key)  # Change row encryption
 
                 # 1st stage of encryption
                 decryption_bin_log = bits2text(login)
@@ -360,13 +360,15 @@ def MainFun():
         resource = input(' Resource: ')
         if resource == '-r':
             os.system("./pwManager-BFL.py")
+        elif resource == '-r':
+            quit()
         login = input(' Login: ')
         pin = stdiomask.getpass(' Key (6 numbers): ', mask='*')  # Encryption key
         key_word = stdiomask.getpass(' Secure word: ', mask='*')
         pin = int(pin)
         key = pin // 10000
-        oper_key = pin % 10000
-        lister = AppendInLister(oper_key)
+        additional_key = pin % 10000       # Additional key for change lister
+        lister = AppendInLister(additional_key)
 
         print(green + '1' + yellow + ' - Generation new pas\n' +
               green + '2' + yellow + ' - save your pas: ' + mc)
