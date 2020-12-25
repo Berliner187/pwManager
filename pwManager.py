@@ -44,7 +44,7 @@ def ClearTerminal():
     os.system("clear")
 
 
-file_date_base = "files/.test-data.dat"
+file_date_base = "files/.data.dat"
 check_file_date_base = os.path.exists(file_date_base)    # Файл, в котором лежат пароли
 
 if os.path.exists("files/.listers.dat") == False:      # Файл рандомно заполняется символами
@@ -191,18 +191,18 @@ def DecryptoCaesar(password, key_caesar, lister):
     return third_message
 
 
-def SaveDataToFile(resource, login, password, key, lister, key_word):
+def SaveDataToFile(resource, login, password, key, lister, master_password):
     """ Шифрование логина и пароля. Сохранение в csv-файл (если этого файла нет)"""
     with open(file_date_base, mode="a", encoding='utf-8') as data:
         fieldnames = ['resource', 'login', 'password']
         writer = csv.DictWriter(data, fieldnames=fieldnames)
         if check_file_date_base == False:
             writer.writeheader()
-        crypto_base_log = CryptoBase64(login, key_word)
+        crypto_base_log = CryptoBase64(login, master_password)
         crypto_caesar_log = CryptoCaesar(crypto_base_log, key, lister)  # Next comes 3-pass encryption
         crypto_bin_log = text2bits(crypto_caesar_log)  # To binary view
 
-        crypto_base_pas = CryptoBase64(password, key_word)
+        crypto_base_pas = CryptoBase64(password, master_password)
         crypto_caesar_pas = CryptoCaesar(crypto_base_pas, key, lister)  # Next comes 3-pass encryption
         crypto_bin_pas = text2bits(crypto_caesar_pas)  # To binary view
 
@@ -317,7 +317,7 @@ def DecryptionBlock():
         print('\n', green, ' -- Restart -- ', mc)  # Show message of restart
         time.sleep(1)
         ClearTerminal()
-        MainFun()  # Start main function
+        Main()  # Start main function
 
     # Decryption mechanism
     with open(file_date_base, encoding='utf-8') as profiles:
@@ -357,11 +357,10 @@ def DecryptionBlock():
                 print('\n Resource:', green, resource, mc,
                       '\n Login:', green, decryption_base_log, mc,
                       '\n Password:', green, decryption_base_pas, mc)
-
     DecryptionBlock()  # Recursion
 
 
-def MainFun():
+def Main():
     """ The main function responsible for the operation of the program """
     if check_file_date_base == False:   # Если файла нет, идет создание файла с ресурсами
 
@@ -397,13 +396,13 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password manager v1.1.6 Stable for Linux (BFL)\nby CISCer' '\n', mc)  # Start text
+        print(blue, '\n' ' Password manager v1.1.6 Stable for Linux (BFL)\nby CISCer' '\n', mc)  # Start text
         DateTime()
         time.sleep(1)
         ClearTerminal()
-        MainFun()
+        Main()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + shit + ' --- ValueError, program is restarted --- ' + shit, mc)
         time.sleep(1.5)
         ClearTerminal()
-        MainFun()
+        Main()
