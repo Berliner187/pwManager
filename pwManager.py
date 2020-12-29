@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.1.6 Stable for Linux (SFL)
+# Password manager v1.1.7 Stable for Linux (SFL)
 # by CISCer
 import os
 import csv
@@ -38,13 +38,12 @@ main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=
 lyster_for_pas = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
 
-
 def ClearTerminal():
     """ Clear terminal """
     os.system("clear")
 
 
-file_date_base = "files/.data.dat"
+file_date_base = "files/.test-data.dat"
 check_file_date_base = os.path.exists(file_date_base)    # Файл, в котором лежат пароли
 
 if os.path.exists("files/.listers.dat") == False:      # Файл рандомно заполняется символами
@@ -71,14 +70,14 @@ if os.path.exists("files/.listers.dat") == False:      # Файл рандомн
 def DateTime():
     """ Фунция вывода приветствия в зависимости от времени суток """
     self_name_file = "files/.self_name.dat"     # Файл с именем (никнеймом)
-    if os.path.exists(self_name_file) == False:     # Создание файла с именем
+    if os.path.exists(self_name_file) == bool(False):     # Создание файла с именем
         with open(self_name_file, "w") as self_name:
             name = input(yellow + '- Your name or nickname: ' + mc)
             self_name.write(name)
             self_name.close()
             DateTime()
 
-    elif os.path.exists(self_name_file) == True:    # Чтение из файла с именем и вывод в консоль
+    elif os.path.exists(self_name_file) == bool(True):    # Чтение из файла с именем и вывод в консоль
         with open(self_name_file, "r") as self_name:
             for name in self_name.readlines():
                 hms = datetime.datetime.today()     # Дата и время
@@ -191,22 +190,22 @@ def DecryptoCaesar(password, key_caesar, lister):
     return third_message
 
 
-def SaveDataToFile(resource, login, password, key, lister, master_password):
+def SaveDataToFile(resource, login, password, key, lister, key_word):
     """ Шифрование логина и пароля. Сохранение в csv-файл (если этого файла нет)"""
     with open(file_date_base, mode="a", encoding='utf-8') as data:
         fieldnames = ['resource', 'login', 'password']
         writer = csv.DictWriter(data, fieldnames=fieldnames)
-        if check_file_date_base == False:
+        if check_file_date_base == bool(False):
             writer.writeheader()
-        crypto_base_log = CryptoBase64(login, master_password)
-        crypto_caesar_log = CryptoCaesar(crypto_base_log, key, lister)  # Next comes 3-pass encryption
-        crypto_bin_log = text2bits(crypto_caesar_log)  # To binary view
+        crypto_log_1 = CryptoBase64(login, key_word)
+        crypto_log_2 = CryptoCaesar(crypto_log_1, key, lister)  # Next comes 3-pass encryption
+        crypto_log_3 = text2bits(crypto_log_2)  # To binary view
 
-        crypto_base_pas = CryptoBase64(password, master_password)
-        crypto_caesar_pas = CryptoCaesar(crypto_base_pas, key, lister)  # Next comes 3-pass encryption
-        crypto_bin_pas = text2bits(crypto_caesar_pas)  # To binary view
+        crypto_pas_1 = CryptoBase64(password, key_word)
+        crypto_pas_2 = CryptoCaesar(crypto_pas_1, key, lister)  # Next comes 3-pass encryption
+        crypto_pas_3 = text2bits(crypto_pas_2)  # To binary view
 
-        writer.writerow({'resource': resource, 'login': crypto_bin_log, 'password': crypto_bin_pas})
+        writer.writerow({'resource': resource, 'login': crypto_log_3, 'password': crypto_pas_3})
 
 
 def password_generation(length):
@@ -224,13 +223,13 @@ def ConfirmPassword():
     return password, confirm_password
 
 
-def ChangeMethod(change, resource, login, key, key_word, lister):
+def ChangeMethod(change, resource, login, key, master_password, lister):
 
     if change == 1:  # Generation new password
         length = int(input(' Length password (Minimum 8): '))
         if length >= 8:
             password = password_generation(length)
-            SaveDataToFile(resource, login, password, key, lister, key_word)
+            SaveDataToFile(resource, login, password, key, lister, master_password)
             print('  Your new password - ' + green + password + mc + ' - success saved' + krokodil * 3 + mc)
         elif length < 8:
             while length < 8:
@@ -238,9 +237,8 @@ def ChangeMethod(change, resource, login, key, key_word, lister):
                 length = int(input(' Length password (Minimum 8): '))
                 password = password_generation(length)
                 if length >= 8:
-                    SaveDataToFile(resource, login, password, key, lister, key_word)
+                    SaveDataToFile(resource, login, password, key, lister, master_password)
                     print('  Your new password - ' + green + password + mc + ' - success saved' + krokodil * 3 + mc)
-
         time.sleep(3)
         ClearTerminal()
 
@@ -255,7 +253,6 @@ def ChangeMethod(change, resource, login, key, key_word, lister):
                 password, confirm_password = ConfirmPassword()
                 if confirm_password == password and len(password) >= 8:
                     SaveDataToFile(resource, login, password, key, lister, key_word)
-
         ClearTerminal()
         print(green + ' - Your password ' +
               password[0] +
@@ -285,7 +282,13 @@ def ShowContent():
         print(yellow, ' Select resource by number', mc)
 
 
-def DecryptionBlock():
+def Auth():
+    pin = 111111#stdiomask.getpass(' Key (6 numbers): ', mask='*')  # Encryption key
+    master_password = 'z'#stdiomask.getpass(' Secure word: ', mask='*')  # Encryption word
+    return pin, master_password
+
+
+def DecryptionBlock(pin, master_password):
     """ Show resources and decrypt them with keys """
     resource_number = input('\n'' Change: ')
     if resource_number == '-a':
@@ -294,9 +297,6 @@ def DecryptionBlock():
 
         resource = input(' Resource: ')
         login = input(' Login: ')
-        pin = stdiomask.getpass(' Key (6 numbers): ', mask='*')  # Encryption key
-        master_password = stdiomask.getpass(' Secure word: ', mask='*')  # Encryption word
-        pin = int(pin)
         key = pin // 10000  # Encryption key (First 2 numbers)  # For Caesar-based encryption
         additional_key = pin % 10000  # Encryption key (Last 4 numbers) for lister
         lister = AppendInLister(additional_key)  # Change row encryption
@@ -317,7 +317,7 @@ def DecryptionBlock():
         print('\n', green, ' -- Restart -- ', mc)  # Show message of restart
         time.sleep(1)
         ClearTerminal()
-        Main()  # Start main function
+        MainFun()  # Start main function
 
     # Decryption mechanism
     with open(file_date_base, encoding='utf-8') as profiles:
@@ -325,7 +325,7 @@ def DecryptionBlock():
         count = 0
         for line in reader:  # Iterating over lines file
             count += 1
-            if count == int(resource_number):
+            if count == int(resource_number):   # Выбор ресурса по номеру
                 ClearTerminal()
                 ShowContent()
                 resource = line["resource"]
@@ -333,48 +333,40 @@ def DecryptionBlock():
                 encryption_password = line["password"]
                 print('\n Selected resource:', green + resource + mc)
 
-                pin = stdiomask.getpass('Key (6 numbers): ', mask='*')  # Encryption key
-                master_password = stdiomask.getpass('Secure word: ', mask='*')  # Encryption word
                 pin = int(pin)
                 key = pin // 10000  # Encryption key (First 2 numbers)  # For Caesar-based encryption
                 additional_key = pin % 10000  # Encryption key (Last 4 numbers) for lister
                 lister = AppendInLister(additional_key)  # Change row encryption
 
-                # 1st stage of encryption
-                decryption_bin_log = bits2text(encryption_login)
-                # 2nd stage of encryption
-                decryption_caesar_log = DecryptoCaesar(decryption_bin_log, key, lister)
-                # 3rd stage of encryption
-                decryption_base_log = DecryptoBase64(decryption_caesar_log, master_password)
+                decryption_log_1 = bits2text(encryption_login)
+                decryption_log_2 = DecryptoCaesar(decryption_log_1, key, lister)
+                decryption_log_3 = DecryptoBase64(decryption_log_2, master_password)
 
-                # 1st stage of encryption
-                decryption_bin_pas = bits2text(encryption_password)
-                # 2nd stage of encryption
-                decryption_caesar_pas = DecryptoCaesar(decryption_bin_pas, key, lister)
-                # 3rd stage of encryption
-                decryption_base_pas = DecryptoBase64(decryption_caesar_pas, master_password)
+                decryption_pas_1 = bits2text(encryption_password)
+                decryption_pas_2 = DecryptoCaesar(decryption_pas_1, key, lister)
+                decryption_pas_3 = DecryptoBase64(decryption_pas_2, master_password)
 
                 print('\n Resource:', green, resource, mc,
-                      '\n Login:', green, decryption_base_log, mc,
-                      '\n Password:', green, decryption_base_pas, mc)
-    DecryptionBlock()  # Recursion
+                      '\n Login:', green, decryption_log_3, mc,
+                      '\n Password:', green, decryption_pas_3, mc)
+
+    DecryptionBlock(pin, master_password)  # Recursion
 
 
-def Main():
+def MainFun():
     """ The main function responsible for the operation of the program """
-    if check_file_date_base == False:   # Если файла нет, идет создание файла с ресурсами
-
-        print(blue + ' - Enter "-r" for restart - ' + mc)
-        print('\n', ' No resources saved. Add them!')
+    if check_file_date_base == bool(False):   # Если файла нет, идет создание файла с ресурсами
+        ClearTerminal()
+        print(blue + '\n - Enter "-r" for restart - ' + mc)
+        print('\n No resources saved. Add them!')
 
         resource = input(' Resource: ')
         if resource == '-r':
-            os.system("./pwManager-BFL.py")
+            MainFun()
         elif resource == '-r':
             quit()
         login = input(' Login: ')
-        pin = stdiomask.getpass(' Key (6 numbers): ', mask='*')  # Encryption key
-        key_word = stdiomask.getpass(' Secure word: ', mask='*')
+        pin, master_password = Auth()
         pin = int(pin)
         key = pin // 10000
         additional_key = pin % 10000       # Additional key for change lister
@@ -384,19 +376,21 @@ def Main():
               green + '2' + yellow + ' - save your pas: ' + mc)
 
         change = int(input('Change: '))     # Change: generation new password or save user password
-        ChangeMethod(change, resource, login, key, key_word, lister)
+        ChangeMethod(change, resource, login, key, master_password, lister)
 
     # Reader
-    elif check_file_date_base == True:
+    elif check_file_date_base == bool(True):
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
         ShowContent()
-        DecryptionBlock()  # Start cycle
+        pin = stdiomask.getpass(' Key (6 numbers): ', mask='*')  # Encryption key
+        master_password = stdiomask.getpass(' Secure word: ', mask='*')  # Encryption word
+        DecryptionBlock(pin, master_password)  # Start cycle
 
 
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' ' Password manager v1.1.6 Stable for Linux (BFL)\nby CISCer' '\n', mc)  # Start text
+        print(blue, '\n' ' Password Manager v1.1.7 Stable for Linux (SFL) \n by CISCer' '\n', mc)  # Start text
         DateTime()
         time.sleep(1)
         ClearTerminal()
