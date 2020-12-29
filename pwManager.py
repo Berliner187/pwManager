@@ -43,10 +43,10 @@ def ClearTerminal():
     os.system("clear")
 
 
-file_date_base = "files/.test-data.dat"
+file_date_base = "files/.data.dat"
 check_file_date_base = os.path.exists(file_date_base)    # Файл, в котором лежат пароли
 
-if os.path.exists("files/.listers.dat") == False:      # Файл рандомно заполняется символами
+if os.path.exists("files/.listers.dat") == bool(False):      # Файл рандомно заполняется символами
     """ Writing shuffled characters to a file """
     print('Wait a few moment... You will only see it once')
     os.mkdir('files')
@@ -191,7 +191,7 @@ def DecryptoCaesar(password, key_caesar, lister):
 
 
 def SaveDataToFile(resource, login, password, key, lister, key_word):
-    """ Шифрование логина и пароля. Сохранение в csv-файл (если этого файла нет)"""
+    """ Шифрование логина и пароля. Сохранение в csv-файл """
     with open(file_date_base, mode="a", encoding='utf-8') as data:
         fieldnames = ['resource', 'login', 'password']
         writer = csv.DictWriter(data, fieldnames=fieldnames)
@@ -243,13 +243,13 @@ def ChangeMethod(change, resource, login, key, master_password, lister):
         ClearTerminal()
 
     elif change == 2:  # Save user password
-        print(blue + '\nMinimum password length 8 characters' + mc)
+        print(blue + '\n Minimum password length 8 characters' + mc)
         password, confirm_password = ConfirmPassword()  # Input password
         if password == confirm_password and len(password) >= 8:
             SaveDataToFile(resource, login, password, key, lister, key_word)
         elif password != confirm_password or len(password) < 8:
             while password != confirm_password or len(password) < 8:
-                print(red + '\nError of confirm or length < 8 characters. Try again' + mc)
+                print(red + '\n Error of confirm or length < 8 characters. Try again' + mc)
                 password, confirm_password = ConfirmPassword()
                 if confirm_password == password and len(password) >= 8:
                     SaveDataToFile(resource, login, password, key, lister, key_word)
@@ -264,7 +264,7 @@ def ChangeMethod(change, resource, login, key, master_password, lister):
         print(red + '  -- Error of change, please, change again --  ' + mc)
         time.sleep(1)
         ClearTerminal()
-    os.system("./pwManager-BFL.py")
+    MainFun()
 
 
 def ShowContent():
@@ -283,8 +283,8 @@ def ShowContent():
 
 
 def Auth():
-    pin = 111111#stdiomask.getpass(' Key (6 numbers): ', mask='*')  # Encryption key
-    master_password = 'z'#stdiomask.getpass(' Secure word: ', mask='*')  # Encryption word
+    pin = stdiomask.getpass(' Key (6 numbers): ', mask='*')  # Encryption key
+    master_password = stdiomask.getpass(' Secure word: ', mask='*')  # Encryption word
     return pin, master_password
 
 
@@ -394,7 +394,7 @@ if __name__ == '__main__':
         DateTime()
         time.sleep(1)
         ClearTerminal()
-        Main()
+        MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + shit + ' --- ValueError, program is restarted --- ' + shit, mc)
         time.sleep(1.5)
