@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.3.0 beta for Linux (SFL)
+# Password manager v1.3.1 beta for Linux (SFL)
 # by CISCer
 import os
 import csv
@@ -331,7 +331,8 @@ def ChangeTypeOfPass(change, resource, login, key, master_password, additional_k
         time.sleep(1)
         ClearTerminal()
         MainFun()
-    DecryptionBlock(master_password, key, additional_key)
+    ShowContent(key, master_password, additional_key)       # Показ содержимого файла с ресурсами
+    DecryptionBlock(key, master_password, additional_key)  # Start cycle
 
 
 def ShowContent(key, master_password, lister):
@@ -365,7 +366,7 @@ def Auth(): # Проверить работосбособность этой х�
                     return key, additional_key, master_password
     else:
         print('\n Your secure word')
-        master_password = 'zxcv'#getpass.getpass(' Secure word: ')  # Encryption word
+        master_password = getpass.getpass(' Secure word: ')  # Encryption word
     key, additional_key = getUniqueSewnKey(master_password)
     key, additional_key = int(key), int(additional_key)
     return key, additional_key, master_password
@@ -400,7 +401,7 @@ def DecryptionBlock(master_password, key, additional_key):
 
         elif resource_number == '-x':  # Condition exit
             ClearTerminal()  # Clearing terminal
-            DateTime()  # Displays completion message
+            GreatingDependingOnDateTime()  # Displays completion message
             print(blue, ' --- Program is closet --- ' + '\n', mc)
             quit()  # Exit
         elif resource_number == '-r':  # Condition restart
@@ -468,7 +469,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password Manager v1.3.0 Beta for Linux (BFL) \n by CISCer' '\n', mc)  # Start text
+        print(blue, '\n' 'Password Manager v1.3.1 Beta for Linux (BFL) \n by CISCer' '\n', mc)  # Start text
         GreatingDependingOnDateTime()
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
