@@ -20,18 +20,36 @@ def RestartProgram():
     os.system("./pwManager-BFL.py")
 
 
-# Colours
-yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
-
+yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # Colours
 main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 
-# Files
+# Files for work program
 file_date_base = "data_for_test.dat"     # Файл, в котором лежат пароли
 check_file_date_base = os.path.exists(file_date_base)    # Проверка этого файла на наличие
 file_keys = "keys.csv"  # Файл с ключами
 check_file_keys = os.path.exists(file_keys)     # Проверка на наличие
 listers_file = "files/.listers.dat"     # Файл со строками в кол-ве 10000
 check_listers_file = os.path.exists(listers_file)   # Проверка этого файла на наличие
+
+if check_listers_file == bool(False):      # Файл рандомно заполняется символами
+    """ Writing shuffled characters to a file """
+    print('Wait a few moment... You will only see it once')
+    os.mkdir('files')
+    qty = 10000  # qty of dictionaries
+    for q in range(qty):
+        symb = []
+        for j in main_lyster:
+            symb.append(j)
+        random.shuffle(symb)
+        string = ''.join(symb)  # Добавление символов в строку
+        # Recording data to file
+        with open(listers_file, "a") as listers:  # Opening a file as "file"
+            listers.write(string)  # Recording an encrypted message
+            listers.write('\n')  # Line break
+            listers.close()  # Closing the file to save data
+    print(green, '\n\n -- All right -- \n', mc)
+    time.sleep(.5)
+    ClearTerminal()
 
 
 # Уровни шифрования
@@ -113,29 +131,15 @@ def DecryptionForKeys(anything, master_password):
     return decryption
 
 
-if listers_file == bool(False):      # Файл рандомно заполняется символами
-    """ Writing shuffled characters to a file """
-    print('Wait a few moment... You will only see it once')
-    os.mkdir('files')
-    qty = 10000  # qty of dictionaries
-    for q in range(qty):
-        symb = []
-        for j in main_lyster:
-            symb.append(j)
-        random.shuffle(symb)
-        string = ''.join(symb)  # Добавление символов в строку
-        # Recording data to file
-        with open(listers_file, "a") as listers:  # Opening a file as "file"
-            listers.write(string)  # Recording an encrypted message
-            listers.write('\n')  # Line break
-            listers.close()  # Closing the file to save data
-    ClearTerminal()
-    print(green, ' -- All right, program will restarted -- \n', mc)
-    time.sleep(1)
-    ClearTerminal()
+def DecryptionResource(encryption_resource, key, master_password, lister):
+    """ Decryption encryption resource """
+    decryption_res_1 = DecryptoLevel1(encryption_resource)
+    decryption_res_2 = DecryptoLevel2(decryption_res_1, key, lister)
+    decryption_res = DecryptoLevel3(decryption_res_2, master_password)
+    return decryption_res
 
 
-def DateTime():
+def GreatingDependingOnDateTime():
     """ Фунция вывода приветствия в зависимости от времени суток """
     self_name_file = "files/.self_name.dat"     # Файл с именем (никнеймом)
     if os.path.exists(self_name_file) == bool(False):     # Создание файла с именем
@@ -143,7 +147,7 @@ def DateTime():
             name = input(yellow + ' - Your name or nickname: ' + mc)
             self_name.write(name)
             self_name.close()
-            DateTime()
+            GreatingDependingOnDateTime()
 
     elif os.path.exists(self_name_file) == bool(True):    # Чтение из файла с именем и вывод в консоль
         with open(self_name_file, "r") as self_name:
@@ -176,35 +180,35 @@ def DateTime():
                     print(" ".join(seq))
 
 
-def AppendInLister(additional_key):
-    """ Добавление символов из файла в список для дальнейшего шифрования """
-    lister_shuffle = []  # Пустой список
+def AppendInListerFromFile(additional_key):
+    """ Добавление нужной строки из файла в список для дальнейшего использования """
+    lister_for_return = []  # Пустой список
     with open(listers_file) as file:  # Файл с рандомными
         s = 0  # Счетчик (по умолчанию 0)
         for row in file:  # Перебор по строкам файла
             s += 1  # Счетчик увеличивается на 1
             if s == additional_key:  # Если значение счетчика равно дополнительному ключу
                 for syb in row:  # Перебор строки посимвольно
-                    lister_shuffle.append(syb)  # Добавление символов в ранее пустой список
-    return lister_shuffle
+                    lister_for_return.append(syb)  # Добавление символов в ранее пустой список
+    return lister_for_return
 
 
-def KeyStitching(master_password):
-    """ Unical key """
+def getUniqueSewnKey(master_password):
+    """ Make unique key """
     if check_file_keys == bool(False):
         list_of_key = []
         for i in range(52):
             list_of_key.append(i)
-        key = random.choices(list_of_key)
         for j in key:
             key = str(j)
         list_of_additional_key = []
         for a in range(10000):  # Заполнения массивва в диапозоне кол-ва строк файла "lister.dat"
             list_of_additional_key.append(a)
+        key = random.choices(list_of_key)
         additional_key = random.choices(list_of_additional_key)  # Выбор случайного значения из массива
         for b in additional_key:
             additional_key = str(b)
-        # Encryption chief-key
+        # Encryption unique-key
         crypto_key = EncryptionForKeys(key, master_password)
         crypto_additional_key = EncryptionForKeys(additional_key, master_password)
 
@@ -262,14 +266,26 @@ def GenerationPassword(length):
 
 def ConfirmUserPass():
     """ Confirm user input password """
-    password = getpass.getpass(' Password: ')
-    confirm_password = getpass.getpass(' Confirm password: ')
+    password = getpass.getpass(' Input: ')
+    confirm_password = getpass.getpass(' Confirm input: ')
     return password, confirm_password
 
 
-def FunForChangeTypeOfPass(resource, login, password, key, additional_key, master_password):
+def IfErrorInConfirm(password):
+    """ Совместить эту блядскую хуйню в Auth """
+    if password == confirm_password and len(password) >= 8:    
+            SaveDataToFile(resource, login, password, key, additional_key, master_password)
+    elif password != confirm_password or len(password) < 8:     
+        while password != confirm_password or len(password) < 8:
+            print(red + '\n Error of confirm or length < 8 characters. Try again' + mc)
+            password, confirm_password = ConfirmUserPass()
+            if confirm_password == password and len(password) >= 8:
+                SaveDataToFile(resource, login, password, key, additional_key, master_password)
+
+
+def NewGeneratedPassword(resource, login, password, key, additional_key, master_password):
     SaveDataToFile(resource, login, password, key, additional_key, master_password)
-    print('  Your new password - ' + green + password + mc + ' - success saved' + mc)
+    print('  Your new password - ' + green + password + mc + ' - success saved')
 
 
 def ChangeTypeOfPass(change, resource, login, key, master_password, additional_key):
@@ -278,14 +294,14 @@ def ChangeTypeOfPass(change, resource, login, key, master_password, additional_k
         length = int(input(' Length password (Minimum 8): '))
         if length >= 8:
             password = GenerationPassword(length)
-            FunForChangeTypeOfPass(resource, login, password, key, additional_key, master_password)
+            NewGeneratedPassword(resource, login, password, key, additional_key, master_password)
         elif length < 8:
             while length < 8:
                 print(red + '\n Error of confirm or length < 8 characters. Try again' + mc)
                 length = int(input(' Length password (Minimum 8): '))
                 password = GenerationPassword(length)
                 if length >= 8:
-                    FunForChangeTypeOfPass(resource, login, password, key, additional_key, master_password)
+                    NewGeneratedPassword(resource, login, password, key, additional_key, master_password)
         time.sleep(3)
         ClearTerminal()
 
@@ -318,14 +334,6 @@ def ChangeTypeOfPass(change, resource, login, key, master_password, additional_k
     DecryptionBlock(master_password, key, additional_key)
 
 
-def DecryptionResource(encryption_resource, key, master_password, lister):
-    """ Decryption encryption resource """
-    decryption_res_1 = DecryptoLevel1(encryption_resource)
-    decryption_res_2 = DecryptoLevel2(decryption_res_1, key, lister)
-    decryption_res = DecryptoLevel3(decryption_res_2, master_password)
-    return decryption_res
-
-
 def ShowContent(key, master_password, lister):
     """ Показ всех сохраненных ресурсов """
     with open(file_date_base, encoding='utf-8') as data:
@@ -343,10 +351,22 @@ def ShowContent(key, master_password, lister):
                      yellow, '\n Select resource by number', mc)
 
 
-def Auth():
-    print('\n Your secure word')
-    master_password = 'zxcv'#getpass.getpass(' Secure word: ')  # Encryption word
-    key, additional_key = KeyStitching(master_password)
+def Auth(): # Проверить работосбособность этой хуйни
+    if check_file_date_base == bool(False):
+        print(' Enter secure word and remember them')
+        master_password, confirm_password = ConfirmUserPass()
+        if master_password == confirm_master_password and len(master_password) >= 8:    
+            return key, additional_key, master_password
+        elif master_password != confirm_master_password or len(password) < 8:     
+            while master_password != confirm_master_password or len(password) < 8:
+                print(red + '\n Error of confirm or length < 8 characters. Try again' + mc)
+                master_password, confirm_master_password = ConfirmUserPass()
+                if confirm_master_password == password and len(password) >= 8:
+                    return key, additional_key, master_password
+    else:
+        print('\n Your secure word')
+        master_password = 'zxcv'#getpass.getpass(' Secure word: ')  # Encryption word
+    key, additional_key = getUniqueSewnKey(master_password)
     key, additional_key = int(key), int(additional_key)
     return key, additional_key, master_password
 
@@ -356,7 +376,7 @@ def DataForResource():
     resource = input(' Resource: ')
     login = input(' Login: ')
     key, additional_key, master_password = Auth()
-    lister = AppendInLister(additional_key)  # Change row encryption
+    lister = AppendInListerFromFile(additional_key)  # Change row encryption
     return key, additional_key, master_password, resource, login, lister
 
 
@@ -398,7 +418,7 @@ def DecryptionBlock(master_password, key, additional_key):
                 count += 1
                 if count == int(resource_number):   # Выбор ресурса по номеру
                     ClearTerminal()
-                    lister = AppendInLister(additional_key)  # Change row encryption
+                    lister = AppendInListerFromFile(additional_key)  # Change row encryption
                     ShowContent(key, master_password, lister)
                     encryption_resource = line["resource"]
                     encryption_login = line["login"]
@@ -440,7 +460,7 @@ def MainFun():
     else:
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
         key, additional_key, master_password = Auth()   # Вызов функции ввода ключа и мастер-пароля
-        lister = AppendInLister(additional_key)  # Change row encryption
+        lister = AppendInListerFromFile(additional_key)  # Change row encryption
         ShowContent(key, master_password, lister)       # Показ содержимого файла с ресурсами
         DecryptionBlock(master_password, key, additional_key)  # Start cycle
 
@@ -449,7 +469,7 @@ if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
         print(blue, '\n' 'Password Manager v1.3.0 Beta for Linux (BFL) \n by CISCer' '\n', mc)  # Start text
-        DateTime()
+        GreatingDependingOnDateTime()
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         pass
