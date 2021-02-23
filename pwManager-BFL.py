@@ -163,7 +163,7 @@ def GreatingDependingOnDateTime():
             self_name.close()
             GreatingDependingOnDateTime()
 
-    elif os.path.exists(self_name_file) == bool(True):    # Чтение из файла с именем и вывод в консоль
+    else:    # Чтение из файла с именем и вывод в консоль
         with open(self_name_file, "r") as self_name:
             for name in self_name.readlines():
                 hms = datetime.datetime.today()     # Дата и время
@@ -263,19 +263,23 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
             'password': crypto_pas})
 
 
-def GenerationPassword(length):
-    """ Генерирование нового случайного пароля """
-    pas_gen = ''  # Empty password
-    for pas_elem in range(length):
-        pas_gen += random.choice(main_lyster)  # Password Adding random symbols from lister
-    return pas_gen      # Возвращает пароль
-
-
 def ConfirmUserPass():
     """ Confirm user input password """
-    password = getpass(' Input: ')
-    confirm_password = getpass(' Confirm input: ')
-    return password, confirm_password
+    def UserInput():
+        password = getpass(' Input: ')
+        confirm_password = getpass(' Confirm input: ')
+        return password, confirm_password
+    password, confirm_password = UserInput()
+    print(blue + '\n Minimum password length 8 characters' + mc)
+    # Условаия принятия пароля
+    if password == confirm_password and len(password) >= 8:
+        return password
+    elif password != confirm_password or len(password) < 8:
+        while password != confirm_password or len(password) < 8:
+            print(red + '\n Error of confirm or length < 8 characters. Try again' + mc)
+            password, confirm_password = UserInput()
+            if confirm_password == password and len(password) >= 8:
+                return password
 
 
 def ChangeTypeOfPass(resource, login, key, master_password, lister):
@@ -284,6 +288,13 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
     def DoForNewGeneratedPassword(resource, login, password, key, lister, master_password):
         SaveDataToFile(resource, login, password, key, lister, master_password)
         print('  Your new password - ' + green + password + mc + ' - success saved')
+
+    def GenerationPassword(length):
+        """ Генерирование нового случайного пароля """
+        pas_gen = ''  # Empty password
+        for pas_elem in range(length):
+            pas_gen += random.choice(main_lyster)  # Password Adding random symbols from lister
+        return pas_gen  # Возвращает пароль
 
     change = int(input('Change (1/2): '))
     if change == 1:  # Generation new password
@@ -301,16 +312,8 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
 
     elif change == 2:  # Save user password
         print(blue + '\n Minimum password length 8 characters' + mc)
-        password, confirm_password = ConfirmUserPass()  # Input password
-        # Условаия принятия пароля
-        if password == confirm_password and len(password) >= 8:    
-            SaveDataToFile(resource, login, password, key, lister, master_password)
-        elif password != confirm_password or len(password) < 8:     
-            while password != confirm_password or len(password) < 8:
-                print(red + '\n Error of confirm or length < 8 characters. Try again' + mc)
-                password, confirm_password = ConfirmUserPass()
-                if confirm_password == password and len(password) >= 8:
-                    SaveDataToFile(resource, login, password, key, lister, master_password)
+        password = ConfirmUserPass()  # Input password
+        SaveDataToFile(resource, login, password, key, lister, master_password)
 
         print(green + '\n  - Your password ' +
               '*' * len(password) + 
@@ -321,16 +324,10 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
         print(red + '  -- Error of change. Please, change again --  ' + mc)
         time.sleep(1)
         ChangeTypeOfPass(resource, login, key, master_password, lister)
-    time.sleep(.3)
+    time.sleep(.6)
     ClearTerminal()
-    if check_file_date_base == bool(False):
-        RestartProgram()
-    else:
-        # ShowContent(key, master_password, lister)       # Показ содержимого файла с ресурсами
-        # DecryptionBlock(key, master_password, lister, resource, login)  # Start cycle
-        print('RESTART')
-        time.sleep(.5)
-        RestartProgram()
+    ShowContent(key, master_password, lister)       # Показ содержимого файла с ресурсами
+    DecryptionBlock(master_password, key, lister, resource, login)  # Start cycle
 
 
 def ShowContent(key, master_password, lister):
@@ -354,25 +351,23 @@ def AuthConfirmPasswordAndGetUniqueSewnKey():   # Проверить работ�
     if check_file_date_base == bool(False):
         """ Создание секретного слова """
         print(blue + ' Enter secure word and remember them' + mc)
-        # master_password = confirm_password = 'sduvbsuidvbsdui'
-        master_password, confirm_password = ConfirmUserPass()
-        key, additional_key = getUniqueSewnKey(master_password)
+        master_password = ConfirmUserPass()
+        key, additional_key = getUniqueSewnKey(master_password)     # Получение новых ключей
         key, additional_key = int(key), int(additional_key)
         lister_row = AppendInListerFromFile(additional_key)  # Change row encryption
         return key, lister_row, master_password
     else:
-        print('\n Your secure word')
-        master_password = getpass(' Input: ')
+        master_password = getpass(' Your secure word: ')
         key, additional_key = getUniqueSewnKey(master_password)
         key, additional_key = int(key), int(additional_key)
         lister_row = AppendInListerFromFile(additional_key)  # Change row encryption
         return key, lister_row, master_password
 
 
-def DataForResource(master_password):
+def DataForResource():
     """ Данные для сохранения (ресурс, логин, пароль) """
-    resource = input(' Resource: ')
-    login = input(' Login: ')
+    resource = input(yellow + ' Resource: ' + mc)
+    login = input(yellow + ' Login: ' + mc)
     key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey()
     if check_file_date_base == bool(False):
         return key, lister_row, master_password, resource, login
@@ -382,49 +377,44 @@ def DataForResource(master_password):
 
 def DecryptionBlock(master_password, key, lister_row, resource, login):
     """ Show resources and decrypt them with keys """
+
     def DataForSaveToFile(resource, login, key, master_password, lister_row):
         ClearTerminal()
-        text_add = (green,  '\n   --- Add new resource ---   ', mc)
+        text_add = (green,  '\n   --- Add new resource ---   \n', mc)
         print(' '.join(text_add))
 
-        def ModelTextForPassword():
+        def TextChangePassword():
             print(green + ' 1' + yellow + ' - Generation new pas \n' +
                   green + ' 2' + yellow + ' - Save your pas \n' + mc)
 
-        if check_file_date_base == bool(True):
-            key, lister_row, resource, login = DataForResource(master_password)     # Ввод данных для ресурса
-            ModelTextForPassword()
+        if check_file_date_base == bool(False):
+            TextChangePassword()
             ChangeTypeOfPass(resource, login, key, master_password, lister_row)
-            RestartProgram()
-            # DecryptionBlock(master_password, key, lister_row, resource, login)
         else:
-            ModelTextForPassword()
+            key, lister_row, resource, login = DataForResource()  # Ввод данных для ресурса
+            TextChangePassword()
             ChangeTypeOfPass(resource, login, key, master_password, lister_row)
+            DecryptionBlock(master_password, key, lister_row, resource, login)
 
     if check_file_date_base == bool(True):
         # Decryption mechanism
-        change_resourse_or_actions = input('\n Change: ')
-        if change_resourse_or_actions == '-a':
+        change_resource_or_actions = input('\n Change: ')
+        if change_resource_or_actions == '-a':
             DataForSaveToFile(resource, login, key, master_password, lister_row)
 
-        elif change_resourse_or_actions == '-r':  # Condition restart
+        elif change_resource_or_actions == '-r':  # Condition restart
             ClearTerminal()  # Clearing terminal
             print('\n', green, ' -- Restart -- ', mc)  # Show message of restart
             time.sleep(.5)
             ClearTerminal()
             RestartProgram()    # Restart program
 
-        elif change_resourse_or_actions == '-x':  # Condition exit
+        elif change_resource_or_actions == '-x':  # Condition exit
             ClearTerminal()  # Clearing terminal
-            GreatingDependingOnDateTime()  # Displays completion message
             print(blue, ' --- Program is closet --- ' + '\n', mc)
             quit()  # Exit
-        elif change_resourse_or_actions == '-o':
-            """ Открытие ресурса в браузере """
-            os.system('google-chrome-stable')
-
         # Надо бы допилить удаление строки
-        # elif change_resourse_or_actions == '-d':    # delite row
+        # elif change_resource_or_actions == '-d':    # delite row
         #     change_resourse_by_number = int(input(' Resource number: '))
         #     with open(file_date_base, encoding='utf-8') as profiles:
         #         reader = csv.DictReader(profiles, delimiter=',')
@@ -443,7 +433,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             count = 0   # Счетчик
             for line in reader:  # Iterating over lines file
                 count += 1
-                if count == int(change_resourse_or_actions):   # Выбор ресурса по номеру
+                if count == int(change_resource_or_actions):   # Выбор ресурса по номеру
                     ClearTerminal()
                     ShowContent(key, master_password, lister_row)
                     encryption_resource = line["resource"]
@@ -451,13 +441,14 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                     encryption_password = line["password"]
 
                     # Decryption data from file
-                    decryption_res_3 = DecryptionData(encryption_resource, key, master_password, lister_row)
-                    decryption_log_3 = DecryptionData(encryption_login, key, master_password, lister_row)
-                    decryption_pas_3 = DecryptionData(encryption_password, key, master_password, lister_row)
+                    decryption_res = DecryptionData(encryption_resource, key, master_password, lister_row)
+                    decryption_log = DecryptionData(encryption_login, key, master_password, lister_row)
+                    decryption_pas = DecryptionData(encryption_password, key, master_password, lister_row)
 
-                    print('\n Resource:', green, decryption_res_3, mc,
-                          '\n Login:', green, decryption_log_3, mc,
-                          '\n Password:', green, decryption_pas_3, mc)
+                    print('\n Resource:', green, decryption_res, mc,
+                          '\n Login:   ', green, decryption_log, mc,
+                          '\n Password:', green, decryption_pas, mc)
+
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
         DataForSaveToFile(resource, login, key, master_password, lister_row)
@@ -472,7 +463,8 @@ def MainFun():
                      '\n No resources saved. Add them! \n' + 
                      '\n Encrypt with one password and master password \n' + mc)
         # Данные для сохранения
-        key, lister_row, master_password, resource, login = DataForResource('')     # Ввод данных для ресурса
+        key, lister_row, master_password, resource, login = DataForResource()     # Ввод данных для ресурса
+        key = int(key)
         DecryptionBlock(master_password, key, lister_row, resource, login)  # Start cycle
     # Reader
     else:
