@@ -18,7 +18,7 @@ def ClearTerminal():
 
 def RestartProgram():
     """ Restart Program """
-    os.system("./pwManager-BFL.py")
+    os.system("./pwManager.py")
 
 
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # Colours
@@ -431,21 +431,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
         if change_resource_or_actions == '-a':
             AddResourceData(resource, login, key, master_password, lister_row)
         CloseAndRestartProgram(change_resource_or_actions)
-        # Надо бы допилить удаление строки
-        if change_resource_or_actions == '--d':    # delite row
-            change_resource = int(input(' Resource number: '))
-            with open(file_date_base, encoding='utf-8') as profiles:
-                reader = DictReader(profiles, delimiter=',')
-                count = 0   # Счетчик
-                for line in reader:  # Iterating over lines file
-                    count += 1
-                    if count == int(change_resource):   # Выбор ресурса по номеру
-                        with open(file_date_base, mode="a", encoding='utf-8') as data:
-                            writer = DictWriter(data, fieldnames=['resource', 'login', 'password'])
-                            writer.writerow({
-                                'resource': '',
-                                'login': '',
-                                'password': ''})
 
         with open(file_date_base, encoding='utf-8') as profiles:
             reader = DictReader(profiles, delimiter=',')
