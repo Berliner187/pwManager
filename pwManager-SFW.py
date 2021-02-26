@@ -1,51 +1,161 @@
-# Password Manager program v1.1.3 Stable for Windows (BFW)
-# by CISCer
+#!/usr/bin/env python3
+# Password Manager v1.4.0 Stable For Windows (SFW)
+# by Berliner187
 import os
-import csv
-import base64
-import random
+from csv import DictReader, DictWriter
+from base64 import urlsafe_b64encode, urlsafe_b64decode
+from random import choice, shuffle
 import datetime
-import time
+from time import sleep
+from colorama import Fore
 
 
-# Colours
-yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # mc - clean colours
+# yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # Colours
+yellow, blue, green, red, mc = Fore.YELLOW, Fore.CYAN, Fore.GREEN, Fore.RED, Fore.RESET
+main_lister = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
+
+# Files for work program
+file_date_base = "files/main_data.dat"     # Файл, в котором лежат пароли
+file_keys = "files/.keys.csv"  # Файл с ключами
+lister_file = "files/.lister.dat"   # Файл со строками в кол-ве 10000
+self_name_file = "files/.self_name.dat"  # Файл с именем (никнеймом)
+control_sum = 'files/.sum-sfw.dat'
+
+check_control_sum = os.path.exists(control_sum)
+check_file_date_base = os.path.exists(file_date_base)    # Проверка этого файла на наличие
+check_file_keys = os.path.exists(file_keys)     # Проверка на наличие
+check_file_lister = os.path.exists(lister_file)   # Проверка этого файла на наличие
+gty_for_listers = 10000     # Число строк в файле listers
+
+if os.path.exists('files') == bool(False):
+    os.mkdir('files')
+if check_control_sum == bool(False):
+    with open(control_sum, 'w') as file_sum:
+        data = os.path.getsize('pwManager-SFW.py')
+        file_sum.write(str(data))
+        file_sum.close()
+        print(green + 'Weight matches' + mc)
+        sleep(1)
+elif check_control_sum == bool(True):
+    f = open(control_sum)
+    original_size = f.readline()
+    if str(os.path.getsize('pwManager-SFW.py')) == str(original_size):
+        print(green + 'Weight matches' + mc)
+        sleep(.5)
+    else:
+        print(red + 'Weight does not match' + mc)
+        sleep(2)
 
 
-try:
-    import pyperclip
-    import emoji
-except ModuleNotFoundError:
-    print(yellow + "... Wait ..." + mc)
-    os.system("pip3 install pyperclip")
-    os.system("pip install emoji")
-    print(green + "--- Success ---" + mc)
-
-# Emoji
-shit = emoji.emojize(":poop:", use_aliases=True)
-sleep = emoji.emojize(":sleeping:", use_aliases=True)
-moon = emoji.emojize(":crescent_moon:", use_aliases=True)
-coffee = emoji.emojize(":coffee:", use_aliases=True)
-donut = emoji.emojize(":doughnut:", use_aliases=True)
-smile = emoji.emojize(":stuck_out_tongue_winking_eye:", use_aliases=True)
-relax = emoji.emojize(":relaxed:", use_aliases=True)
-krokodil = emoji.emojize(":crocodile:", use_aliases=True)
-
-main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
-lyster_for_pas = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+# Уровни шифрования
+def CryptoLevel1(text, encoding='utf-8', errors='surrogatepass'):
+    """ Translation to binary view """
+    bits = bin(int.from_bytes(text.encode(encoding, errors), 'big'))[2:]
+    return bits.zfill(8 * ((len(bits) + 7) // 8))
 
 
-def DateTime():
-    """ Фунция вывода времени суток """
-    self_name_file = "files/.self_name.dat"     # Файл с именем (никнеймом)
-    if os.path.exists(self_name_file) == False:     # Создание файла с именем
+def DecryptoLevel1(bits, encoding='utf-8', errors='surrogatepass'):
+    """ Translation from binary """
+    n = int(bits, 2)
+    return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode(encoding, errors) or '\0'
+
+
+def CryptoLevel2(password, key, lister):
+    """ Encryption based Caesar """
+    key = int(key)
+    first_message = ''
+    second_message = ''
+    third_message = ''
+    for a in password:  # First pass
+        first_message += lister[
+            (lister.index(a) - key) % len(lister)]  # Permutation to n-amount of first pass
+    for b in first_message:  # Second pass
+        second_message += lister[
+            (lister.index(b) - key) % len(lister)]  # Permutation to n-amount of second pass
+    for c in second_message:  # Third pass
+        third_message += lister[
+            (lister.index(c) - key) % len(lister)]  # Permutation to n-amount of third pass
+    return third_message
+
+
+def DecryptoLevel2(password, key, lister):
+    """ Decryption based Caesar """
+    key = int(key)
+    first_message = ''
+    second_message = ''
+    third_message = ''
+    for a in password:  # First pass
+        first_message += lister[
+            (lister.index(a) + key) % len(lister)]  # Permutation to n-amount of first pass
+    for b in first_message:  # Second pass
+        second_message += lister[
+            (lister.index(b) + key) % len(lister)]  # Permutation to n-amount of second pass
+    for c in second_message:  # Third pass
+        third_message += lister[
+            (lister.index(c) + key) % len(lister)]  # Permutation to n-amount of third pass
+    return third_message
+
+
+def CryptoLevel3(message, key):
+    """ Base64-based encryption """
+    key, message = str(key), str(message)
+    enc = []
+    for i in range(len(message)):
+        key_c = key[i % len(key)]
+        enc.append(chr((ord(message[i]) + ord(key_c)) % 256))
+    encryption = urlsafe_b64encode("".join(enc).encode()).decode()
+    return encryption
+
+
+def DecryptoLevel3(encryption, key):
+    """ Base64-based decryption """
+    key = str(key)
+    dec = []
+    message = urlsafe_b64decode(encryption).decode()
+    for i in range(len(message)):
+        key_c = key[i % len(key)]
+        dec.append(chr((256 + ord(message[i]) - ord(key_c)) % 256))
+    return "".join(dec)
+
+
+def EncryptionForKeys(anything, master_password):
+    crypto_start = CryptoLevel3(anything, master_password)
+    crypto = CryptoLevel1(crypto_start)
+    return crypto
+
+
+def DecryptionForKeys(anything, master_password):
+    decryption_start = DecryptoLevel1(anything)
+    decryption = DecryptoLevel3(decryption_start, master_password)
+    return decryption
+
+
+def EncryptionData(data, key, master_password, lister):
+    """ Decryption encryption resource """
+    encryption_data = CryptoLevel3(data, master_password)
+    encryption_data_2 = CryptoLevel2(encryption_data, key, lister)
+    encryption_data = CryptoLevel1(encryption_data_2)
+    return encryption_data
+
+
+def DecryptionData(encryption_data, key, master_password, lister):
+    """ Decryption encryption resource """
+    decryption_data_1 = DecryptoLevel1(encryption_data)
+    decryption_data_2 = DecryptoLevel2(decryption_data_1, key, lister)
+    decryption_data = DecryptoLevel3(decryption_data_2, master_password)
+    return decryption_data
+
+
+def GreatingDependingOnDateTime():
+    """ Фунция вывода приветствия в зависимости от времени суток """
+    if os.path.exists(self_name_file) == bool(False):     # Создание файла с именем
         with open(self_name_file, "w") as self_name:
-            name = input(yellow + 'Your name or nickname: ' + mc)
+            name = input(yellow + ' - Your name or nickname: ' + mc)
             self_name.write(name)
             self_name.close()
-            DateTime()
+            GreatingDependingOnDateTime()
 
-    elif os.path.exists(self_name_file) == True:    # Чтение из файла с именем и вывод в консоль
+    else:    # Чтение из файла с именем и вывод в консоль
         with open(self_name_file, "r") as self_name:
             for name in self_name.readlines():
                 hms = datetime.datetime.today()     # Дата и время
@@ -61,315 +171,344 @@ def DateTime():
                     secunde = str(0) + str(secunde)
                 time_format = (str(hour), str(minute), str(secunde))
                 time_now = ":".join(time_format)    # Форматирование в формат времени
-
-                if '04:00:00' <= time_now < '12:00:00':
-                    seq = (green, coffee, 'Good morning,', name, coffee, donut*3, mc)
+                if '04:00:00' <= time_now < '12:00:00':     # Condition morning
+                    seq = (green, 'Good morning,', name, mc)
                     print(" ".join(seq))
-
-                elif '12:00:00' <= time_now < '17:00:00':
-                    seq = (green, 'Good afternoon,', name, smile*3, relax*2, mc)
+                elif '12:00:00' <= time_now < '17:00:00':   # Condition day
+                    seq = (green, 'Good afternoon,', name, mc)
                     print(" ".join(seq))
-
-                elif '17:00:00' <= time_now <= '23:59:59':
-                    seq = (green, relax, 'Good evening,', name, sleep*2, mc)
+                elif '17:00:00' <= time_now <= '23:59:59':  # Condition evening
+                    seq = (green, 'Good evening,', name, mc)
                     print(" ".join(seq))
-
-                elif '00:00:00' <= time_now < '04:00:00':
-                    seq = (green, 'Good night,', name, moon*3, mc)
+                elif '00:00:00' <= time_now < '04:00:00':   # Condition night
+                    seq = (green, 'Good night,', name, mc)
                     print(" ".join(seq))
-
-
-# Перевод в двоичный вид
-def text2bits(text, encoding='utf-8', errors='surrogatepass'):
-    bits = bin(int.from_bytes(text.encode(encoding, errors), 'big'))[2:]
-    return bits.zfill(8 * ((len(bits) + 7) // 8))
-
-
-# Перевод из двоичного вида
-def bits2text(bits, encoding='utf-8', errors='surrogatepass'):
-    n = int(bits, 2)
-    return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode(encoding, errors) or '\0'
-
-
-def CryptoBase64(message, key):
-    enc = []
-    for i in range(len(message)):
-        key_c = key[i % len(key)]
-        enc.append(chr((ord(message[i]) + ord(key_c)) % 256))
-    encryption = base64.urlsafe_b64encode("".join(enc).encode()).decode()
-    return encryption
-
-
-def DecryptoBase64(encryption, key):
-    dec = []
-    message = base64.urlsafe_b64decode(encryption).decode()
-    for i in range(len(message)):
-        key_c = key[i % len(key)]
-        dec.append(chr((256 + ord(message[i]) - ord(key_c)) % 256))
-    return "".join(dec)
 
 
 def ClearTerminal():
-    """ Очистка консоли """
-    print('\n'*100)
+    """ Clear terminal """
+    print('\n'*60)
 
 
-def fuckingMakingFiles():
-    """ Запись перемешанных символов в файл """
-    print('Wait a few moment... You will only see it once')
-    os.mkdir('files')
-    qty = 10000  # qty of dictionaries
-    for i in range(qty):
+def RestartProgram():
+    """ Restart Program """
+    # os.execv(sys.executable, [sys.executable] + sys.argv)
+    os.system('python pwManager-SFW.py')
+
+
+def MakingRows(master_password):
+    ClearTerminal()
+    print('Making files. Please, wait ...')
+    global gty_for_listers
+    for q in range(gty_for_listers):
         symb = []
-        for j in main_lyster:
+        for j in main_lister:
             symb.append(j)
-        random.shuffle(symb)
+        shuffle(symb)
         string = ''.join(symb)  # Добавление символов в строку
+        # Шифрование строки
+        enc_string = CryptoLevel3(string, master_password)
+        total = CryptoLevel1(enc_string)
         # Recording data to file
-        with open("files/.listers.dat", "a") as listers:  # Opening a file as "file"
-            listers.write(string)  # Recording an encrypted message
-            listers.write('\n')  # Line break
-            listers.close()  # Closing the file to save data
-    print(green, '-- RESTART --', '\n' * 100, mc)
-    time.sleep(1)
+        with open(lister_file, "a") as lister:  # Opening a file as "file"
+            lister.write(total)  # Recording an encrypted message
+            lister.write('\n')  # Line break
+            lister.close()  # Closing the file to save data
+    print('\n\n -- All right -- \n')
+    sleep(1)
     ClearTerminal()
 
 
-listers_file = os.path.exists("files/.listers.dat")
-if listers_file == False:
-    fuckingMakingFiles()
-
-
-# Добавление символов из файла в список
-def AppendInLister(oper_key):
-    lyster_shuffle = []  # Пустой список
-    with open("files/.listers.dat") as file:  # Файл с рандомными
+def AppendInListerFromFile(additional_key, master_password):
+    """ Добавление нужной строки из файла в список для дальнейшего использования """
+    lister_for_return = []  # Пустой список
+    with open(lister_file) as file:  # Файл с рандомными
         s = 0  # Счетчик (по умолчанию 0)
         for row in file:  # Перебор по строкам файла
             s += 1  # Счетчик увеличивается на 1
-            if s == oper_key:  # Если значение счетчика равно опер-ключу
-                for syb in row:  # Перебор строки посимвольно
-                    lyster_shuffle.append(syb)  # Добавление символов в ранее пустой список
-    return lyster_shuffle
+            if s == additional_key:  # Если значение счетчика равно дополнительному ключу
+                dec_row = DecryptoLevel1(row)
+                total = DecryptoLevel3(dec_row, master_password)
+                for syb in total:  # Перебор строки посимвольно
+                    lister_for_return.append(syb)  # Добавление символов в ранее пустой список
+    return lister_for_return
 
 
-# Encryption by Caesar
-def CryptoCaesar(password, key_caesar, lister):
-    first_message = ''
-    second_message = ''
-    third_message = ''
-    for a in password:  # First pass
-        first_message += lister[
-            (lister.index(a) - key_caesar) % len(lister)]  # Permutation to n-amount of first pass
-    for b in first_message:  # Second pass
-        second_message += lister[
-            (lister.index(b) - key_caesar) % len(lister)]  # Permutation to n-amount of second pass
-    for c in second_message:  # Third pass
-        third_message += lister[
-            (lister.index(c) - key_caesar) % len(lister)]  # Permutation to n-amount of third pass
-    return third_message
+def getUniqueSewnKey(master_password):
+    """ Make unique key """
+    global gty_for_listers
+    if check_file_keys == bool(False):
+        list_of_key = []
+        for i in range(52):
+            list_of_key.append(i)
+        list_of_additional_key = []
+        for a in range(gty_for_listers):  # Заполнения массивва в диапозоне кол-ва строк файла "lister.dat"
+            list_of_additional_key.append(a)
+        key = choice(list_of_key)
+        additional_key = choice(list_of_additional_key)  # Выбор случайного значения из массива
+        # Encryption unique-key
+        crypto_key = EncryptionForKeys(key, master_password)
+        crypto_additional_key = EncryptionForKeys(additional_key, master_password)
 
-# Decryption by Caesar
-def DecryptoCaesar(password, key_caesar, lister):
-    first_message = ''
-    second_message = ''
-    third_message = ''
-    for a in password:  # First pass
-        first_message += lister[
-            (lister.index(a) + key_caesar) % len(lister)]  # Permutation to n-amount of first pass
-    for b in first_message:  # Second pass
-        second_message += lister[
-            (lister.index(b) + key_caesar) % len(lister)]  # Permutation to n-amount of second pass
-    for c in second_message:  # Third pass
-        third_message += lister[
-            (lister.index(c) + key_caesar) % len(lister)]  # Permutation to n-amount of third pass
-    return third_message
-
-
-file_date_base = "files/.data.dat"
-
-
-def fuckingSaveDataIfTrue(resource, login, password, key, lister, key_word):
-    """ Шифрование логина и пароля. Сохранение в csv-файл (если этот файл есть) """
-    with open(file_date_base, mode="a", encoding='utf-8') as data:
-        fieldnames = ['resource', 'login', 'password']
-        writer = csv.DictWriter(data, fieldnames=fieldnames)
-
-        crypto_base_log = CryptoBase64(login, key_word)
-        crypto_caesar_log = CryptoCaesar(crypto_base_log, key, lister)  # Next comes 3-pass encryption
-        crypto_base_log = text2bits(crypto_caesar_log)  # To binary view
-
-        crypto_base_pas = CryptoBase64(password, key_word)
-        crypto_caesar_pas = CryptoCaesar(crypto_base_pas, key, lister)  # Next comes 3-pass encryption
-        crypto_base_pas = text2bits(crypto_caesar_pas)  # To binary view
-
-        writer.writerow({'resource': resource, 'login': crypto_base_log, 'password': crypto_base_pas})
-
-
-def PasswordGeneraton():
-    """ Генерирование нового случайного пароля """
-    password_new = ''  # Password
-    length = 24  # Amount
-    for pass_gen in range(length):
-        password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
-    return password_new
-
-
-def StartApp():
-    """ The main function responsible for the operation of the program """
-
-    def ChangeMethodSavePassword(change, resource, login, key, lister, key_word):
-        """ Change: save user password or generation new """
-        if change == 1:
-            password = PasswordGeneraton()
-            fuckingSaveDataIfFalse(resource, login, password, key, lister, key_word)
-            print('Your new password - ' + green + password + mc + ' - success saved' + krokodil * 3 + mc)
-            pyperclip.copy(password)
-            time.sleep(2)
-            ClearTerminal()
-            StartApp()
-        elif change == 2:
-            password = input('Password: ')
-            fuckingSaveDataIfTrue(resource, login, password, key, lister, key_word)
-            ClearTerminal()
-            print(green + '- Your password ' +
-                  password[0] +
-                  password[1] + '***' +
-                  password[-1] + ' success saved -' + krokodil * 3 + mc)
-            time.sleep(2)
-            ClearTerminal()
-            StartApp()
-        else:
-            print(red + shit + 'Error, please, change again' + shit + mc)
-            time.sleep(1)
-            ClearTerminal()
-            StartApp()
-    DateTime()
-    # Если файла нет, создание файла с ресурсами
-    if os.path.exists(file_date_base) == False:
-
-        def fuckingSaveDataIfFalse(resource, login, password, key, lister, key_word):
-            """ Шифрование логина и пароля. Сохранение в csv-файл (если этого файла нет)"""
-            with open(file_date_base, mode="a", encoding='utf-8') as data:
-                fieldnames = ['resource', 'login', 'password']
-                writer = csv.DictWriter(data, fieldnames=fieldnames)
+        with open(file_keys, mode="w", encoding='utf-8') as data:
+            writer = DictWriter(data, fieldnames=['key', 'additional_key'])
+            if check_file_keys == bool(False):
                 writer.writeheader()
+            writer.writerow({
+                'key': crypto_key,
+                'additional_key': crypto_additional_key})
+            return str(key), str(additional_key)
+    else:
+        with open(file_keys, encoding='utf-8') as profiles:
+            reader = DictReader(profiles, delimiter=',')
+            for row in reader:
+                key = row["key"]
+                additional_key = row["additional_key"]
+            decryption_key = DecryptionForKeys(key, master_password)
+            decryption_additional_key = DecryptionForKeys(additional_key, master_password)
+            return str(decryption_key), str(decryption_additional_key)
 
-                crypto_base_log = CryptoBase64(login, key_word)
-                crypto_caesar_log = CryptoCaesar(crypto_base_log, key, lister)  # Next comes 3-pass encryption
-                crypto_base_log = text2bits(crypto_caesar_log)  # To binary view
 
-                crypto_base_pas = CryptoBase64(password, key_word)
-                crypto_caesar_pas = CryptoCaesar(crypto_base_pas, key, lister)  # Next comes 3-pass encryption
-                crypto_base_pas = text2bits(crypto_caesar_pas)  # To binary view
+def SaveDataToFile(resource, login, password, key, lister, master_password):
+    """ Шифрование логина и пароля. Сохранение в csv-файл """
+    with open(file_date_base, mode="a", encoding='utf-8') as data:
+        writer = DictWriter(data, fieldnames=['resource', 'login', 'password'])
+        if check_file_date_base == bool(False):
+            writer.writeheader()
+        crypto_res = EncryptionData(resource, key, master_password, lister)
+        crypto_log = EncryptionData(login, key, master_password, lister)
+        crypto_pas = EncryptionData(password, key, master_password, lister)
+        writer.writerow({
+            'resource': crypto_res,
+            'login': crypto_log,
+            'password': crypto_pas})
 
-                writer.writerow({'resource': resource, 'login': crypto_base_log, 'password': crypto_base_pas})
 
-        print('\n', 'There are no resources saved. Add them:')
-        resource = input('Resource: ')
-        login = input('Login: ')
+def ConfirmUserPass():
+    """ Confirm user input password """
+    def UserInput():
+        user_password = input(' Input: ')
+        user_confirm_password = input(' Confirm input: ')
+        return user_password, user_confirm_password
+    password, confirm_password = UserInput()
+    print(blue + '\n Minimum password length 8 characters' + mc)
+    # Условаия принятия пароля
+    if password == confirm_password and len(password) >= 8:
+        return password
+    elif password != confirm_password or len(password) < 8:
+        while password != confirm_password or len(password) < 8:
+            print(red + '\n Error of confirm or length < 8 characters. Try again' + mc)
+            password, confirm_password = UserInput()
+            if confirm_password == password and len(password) >= 8:
+                return password
 
-        pin = int(input('Key (6 numbers): '))  # Encryption key
-        key_word = input('Secure word: ')
-        key = pin // 10000
-        oper_key = pin % 10000
-        lister = AppendInLister(oper_key)
 
-        print(green + '1' + yellow + ' - Generation new pas; ' + green + '2' + yellow + ' - save your pas: ' + mc)
+def ChangeTypeOfPass(resource, login, key, master_password, lister):
+    """ Change type of password: user or generation """
 
-        change = int(input('Change: '))
-        ChangeMethodSavePassword(change, resource, login, key, lister, key_word)
+    def DoForNewGeneratedPassword(resource, login, password, key, lister, master_password):
+        SaveDataToFile(resource, login, password, key, lister, master_password)
+        print('  Your new password - ' + green + password + mc + ' - success saved')
 
+    def GenerationPassword(length):
+        """ Генерирование нового случайного пароля """
+        pas_gen = ''  # Empty password
+        for pas_elem in range(length):
+            pas_gen += choice(main_lister)  # Password Adding random symbols from lister
+        return pas_gen  # Возвращает пароль
+
+    change = int(input('Change (1/2): '))
+    if change == 1:  # Generation new password
+        length = int(input(' Length password (Minimum 8): '))
+        if ValueError:
+            length = 13
+        if length >= 8:
+            password = GenerationPassword(length)
+            DoForNewGeneratedPassword(resource, login, password, key, lister, master_password)
+        elif length < 8:
+            while length < 8:
+                print(red + '\n Error of confirm or length < 8 characters. Try again' + mc)
+                length = int(input(' Length password (Minimum 8): '))
+                password = GenerationPassword(length)
+                if length >= 8:
+                    DoForNewGeneratedPassword(resource, login, password, key, lister, master_password)
+
+    elif change == 2:  # Save user password
+        print(blue + '\n Minimum password length 8 characters' + mc)
+        password = ConfirmUserPass()  # Input password
+        SaveDataToFile(resource, login, password, key, lister, master_password)
+
+        print(green + '\n  - Your password ' +
+              '*' * len(password) +
+              password[-1] +
+              password[-2] +
+              ' successfully saved -  ' + mc)
+    else:
+        print(red + '  -- Error of change. Please, change again --  ' + mc)
+        sleep(1)
+        ChangeTypeOfPass(resource, login, key, master_password, lister)
+    sleep(1)
+    ClearTerminal()
+
+    if check_file_date_base == bool(False):
+        RestartProgram()
+    else:
+        ShowContent(key, master_password, lister)       # Показ содержимого файла с ресурсами
+        DecryptionBlock(master_password, key, lister, resource, login)  # Start cycle
+
+
+def ShowContent(key, master_password, lister):
+    """ Показ всех сохраненных ресурсов """
+    ClearTerminal()
+    with open(file_date_base, encoding='utf-8') as data:
+        s = 0
+        reader = DictReader(data, delimiter=',')
+        print(yellow + '\n   --- Saved resources ---   ' + '\n'*3 + mc)
+        for line in reader:
+            encryption_resource = line["resource"]
+            decryption_res = DecryptionData(encryption_resource, key, master_password, lister)
+            s += 1
+            print(str(s) + '. ' + decryption_res)    # Decryption resource
+
+        print(blue + '\n  - Enter "-r" to restart, "-x" to exit'
+                     '\n  - Enter "-a", to add new resource',
+                     yellow, '\n Select resource by number', mc)
+
+
+def CloseAndRestartProgram(change):
+    if change == '-x':  # Condition exit
+        ClearTerminal()  # Clearing terminal
+        print(blue, ' --- Program is closet --- \n', mc)
+        quit()  # Exit
+    elif change == '-r':  # Condition restart
+        ClearTerminal()  # Clearing terminal
+        print('\n', green, ' -- Restart -- ', mc)  # Show message of restart
+        sleep(.5)
+        ClearTerminal()
+        RestartProgram()  # Restart program
+
+
+def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
+    def GetKeys():
+        key, additional_key = getUniqueSewnKey(master_password)  # Получение ключей
+        return int(key), int(additional_key)
+
+    if check_file_date_base == bool(False):
+        print(blue + ' Enter secure word and remember them' + mc)
+        key, additional_key = GetKeys()
+        lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
+        return key, lister_row, master_password
+    else:
+        master_password = input(' Your secure word: ')
+        try:
+            CloseAndRestartProgram(master_password)
+        except ZeroDivisionError:
+            print(red + '- Incorrect input -' + mc)
+            sleep(1)
+            MainFun()
+        key, additional_key = GetKeys()
+        lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
+        return key, lister_row, master_password
+
+
+def TextAddNewResource():
+    ClearTerminal()
+    text_add = (green, '\n   --- Add new resource ---   ', '\n' * 3, mc)
+    print(' '.join(text_add))
+
+
+def DataForResource(master_password):
+    """ Данные для сохранения (ресурс, логин, пароль) """
+    if check_file_date_base == bool(False):
+        TextAddNewResource()
+    resource = input(yellow + ' Resource: ' + mc)
+    login = input(yellow + ' Login: ' + mc)
+    key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(master_password)
+    return key, lister_row, resource, login
+
+
+def DecryptionBlock(master_password, key, lister_row, resource, login):
+    """ Show resources and decrypt them with keys """
+    def AddResourceData(resource, login, key, master_password, lister_row):
+        TextAddNewResource()
+
+        def TextChangePassword():
+            print(green + ' 1' + yellow + ' - Generation new pas \n' +
+                  green + ' 2' + yellow + ' - Save your pas \n' + mc)
+
+        if check_file_date_base == bool(False):
+            TextChangePassword()
+            ChangeTypeOfPass(resource, login, key, master_password, lister_row)
+        else:
+            key, lister_row, resource, login = DataForResource(master_password)  # Ввод данных для ресурса
+            TextChangePassword()
+            ChangeTypeOfPass(resource, login, key, master_password, lister_row)
+            DecryptionBlock(master_password, key, lister_row, resource, login)
+
+    if check_file_date_base == bool(True):
+        # Decryption mechanism
+        change_resource_or_actions = input('\n Change: ')
+        if change_resource_or_actions == '-a':
+            AddResourceData(resource, login, key, master_password, lister_row)
+        CloseAndRestartProgram(change_resource_or_actions)
+        with open(file_date_base, encoding='utf-8') as profiles:
+            reader = DictReader(profiles, delimiter=',')
+            count = 0   # Счетчик
+            for line in reader:  # Iterating over lines file
+                count += 1
+                if count == int(change_resource_or_actions):   # Выбор ресурса по номеру
+                    ClearTerminal()
+                    ShowContent(key, master_password, lister_row)
+                    encryption_resource = line["resource"]
+                    encryption_login = line["login"]
+                    encryption_password = line["password"]
+
+                    # Decryption data from file
+                    decryption_res = DecryptionData(encryption_resource, key, master_password, lister_row)
+                    decryption_log = DecryptionData(encryption_login, key, master_password, lister_row)
+                    decryption_pas = DecryptionData(encryption_password, key, master_password, lister_row)
+
+                    print('\n Resource:', green, decryption_res, mc,
+                          '\n Login:   ', green, decryption_log, mc,
+                          '\n Password:', green, decryption_pas, mc)
+
+        DecryptionBlock(master_password, key, lister_row, resource, login)
+    else:
+        AddResourceData(resource, login, key, master_password, lister_row)
+        RestartProgram()
+
+
+def MainFun():
+    """ The main function responsible for the operation of the program """
+    if check_file_date_base == bool(False):   # Если файла нет, идет создание файла с ресурсами
+        ClearTerminal()     # Очистка терминала
+        print(blue + "\n  - Encrypt your passwords with one master-password -    "
+                     "\n  -           No resources saved. Add them!         -  \n" +
+                     "\n ---                 That's easy!                  --- \n" + mc)
+        print(yellow + ' -- Pick a master-password --' + mc)
+        master_password = ConfirmUserPass()
+        if check_file_lister == bool(False):
+            MakingRows(master_password)
+        # Данные для сохранения
+        key, lister_row, resource, login = DataForResource(master_password)     # Ввод данных для ресурса
+        DecryptionBlock(master_password, key, lister_row, resource, login)  # Start cycle
     # Reader
-    if os.path.exists(file_date_base) == True:
+    elif check_file_date_base and check_file_keys and check_file_lister == bool(True):
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
-        with open(file_date_base, encoding='utf-8') as data:
-            s = 0
-            reader = csv.DictReader(data, delimiter=',')
-            print('\n'*5 + yellow + '--- Saved resources ---' + mc)
-            for line in reader:
-                s += 1
-                print(str(s) + '.', line["resource"])
-
-            print('\n' + blue + 'Enter "-r" to restart, "-x" to exit''\n' +
-                  'Enter "-a", to add new resource''\n' +
-                  yellow + 'Select resource by number ''\n' + mc)
-
-            def ShowSolidarity():
-                password_new = ''  # Password
-                length = 21  # Amount
-                for pass_gen in range(length):
-                    password_new += random.choice(lyster_for_pas)  # Password Adding random symbols from lister
-
-                resource_number = input('\n\n''Input: ')
-                if resource_number == '-a':
-                    print('\n' + green + krokodil + '-- Add new resource --' + krokodil + mc)
-                    resource = input('Resource: ')
-                    login = input('Login: ')
-
-                    pin = int(input('Key (6 numbers): '))  # Encryption key
-                    key = pin // 10000
-                    oper_key = pin % 10000
-                    lister = AppendInLister(oper_key)
-                    key_word = input('Secure word: ')
-
-                    print(green + '1' + yellow + ' - Generation new pas; ' +
-                          green + '2' + yellow + ' - save your pas: ' + mc)
-
-                    change = int(input('Change: '))
-                    ChangeMethodSavePassword(change, resource, login, key, lister, key_word)
-
-                elif resource_number == '-x':  # Condition exit
-                    ClearTerminal()  # Clearing terminal
-                    print(blue, '--- Program is closet ---' + '\n', mc)
-                    quit()  # Exit
-                elif resource_number == '-r':  # Condition restart
-                    ClearTerminal()  # Clearing terminal
-                    print('\n''-- Restart --')  # Show message of restart
-                    StartApp()  # Start main function
-
-                with open(file_date_base, encoding='utf-8') as profiles:
-                    reader = csv.DictReader(profiles, delimiter=',')
-                    count = 0
-                    for line in reader:
-                        count += 1
-                        if count == int(resource_number):
-                            resource = line["resource"]
-                            login = line["login"]
-                            password = line["password"]
-                            print('Selected resource:', green + resource + mc)
-
-                            pin = int(input('\n''Key (6 numbers): '))  # Encryption key
-                            master_password = input('Secure word: ')
-                            key = pin // 10000
-                            oper_key = pin % 10000
-                            lister = AppendInLister(oper_key)
-                            # Decryption login
-                            decryption_bin_log_one = bits2text(login)
-                            decryption_caesar_log = DecryptoCaesar(decryption_bin_log_one, key, lister)
-                            decryption_base_log = DecryptoBase64(decryption_caesar_log, master_password)
-                            # Decryption password
-                            decryption_bin_pas_one = bits2text(password)  # To binary view
-                            decryption_caesar_pas = DecryptoCaesar(decryption_bin_pas_one, key, lister)
-                            decryption_base_pas = DecryptoBase64(decryption_caesar_pas, master_password)
-
-                            print('\n' +
-                                  resource + ' --> ' +
-                                  green + decryption_base_log + ' --> ' +
-                                  decryption_base_pas + mc)
-                            pyperclip.copy(decryption_base_pas)     # Copy password
-                ShowSolidarity()
-            ShowSolidarity()
+        key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None)
+        ShowContent(key, master_password, lister_row)       # Показ содержимого файла с ресурсами
+        DecryptionBlock(master_password, key, lister_row, None, None)  # Start cycle
 
 
 if __name__ == '__main__':
     try:  # Running a program through an exception
-        print(blue, '\n' 'Password manager v1.1.3 Beta for Windows' '\n' 'by CISCer' '\n', mc)  # Start text
-        time.sleep(2)
         ClearTerminal()
-        StartApp()
+        print(blue, '\n Password Manager v1.4.0 Stable For Windows (SFW) \n by Berliner187' '\n', mc)  # Start text
+        GreatingDependingOnDateTime()
+        sleep(.7)
+        MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
-        print(red, '\n' + shit + '--- ValueError, program is restarted ---' + shit, mc)
-        time.sleep(1.5)
+        print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
+        sleep(2)
         ClearTerminal()
-        StartApp()
+        RestartProgram()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Password manager v1.4.0 Stable For Linux (SFL)
 # by CISCer
-import os
+import os, sys
 from csv import DictReader, DictWriter
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 import random
@@ -13,12 +13,11 @@ from getpass import getpass
 def ClearTerminal():
     """ Clear terminal """
     os.system("clear")
-    # print('\n'*5)
 
 
 def RestartProgram():
     """ Restart Program """
-    os.system("./pwManager.py")
+    os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # Colours
@@ -29,14 +28,31 @@ file_date_base = "files/main_data.dat"     # Файл, в котором леж�
 file_keys = "files/.keys.csv"  # Файл с ключами
 lister_file = "files/.lister.dat"   # Файл со строками в кол-ве 10000
 self_name_file = "files/.self_name.dat"  # Файл с именем (никнеймом)
+control_sum = 'files/.sum-sfl.dat'
 
+
+check_control_sum = os.path.exists(control_sum)
 check_file_date_base = os.path.exists(file_date_base)    # Проверка этого файла на наличие
 check_file_keys = os.path.exists(file_keys)     # Проверка на наличие
-check_lister_file = os.path.exists(lister_file)   # Проверка этого файла на наличие
-gty_for_listers = 10000
+check_file_lister = os.path.exists(lister_file)   # Проверка этого файла на наличие
+gty_for_listers = 10000     # Число строк в файле listers
 
 if os.path.exists('files') == bool(False):
     os.mkdir('files')
+if check_control_sum == bool(False):
+    with open(control_sum, 'w') as file_sum:
+        data = os.path.getsize('pwManager-SFW.py')
+        file_sum.write(str(data))
+        file_sum.close()
+elif check_control_sum == bool(True):
+    f = open(control_sum)
+    original_size = f.readline()
+    if str(os.path.getsize('pwManager-SFW.py')) == str(original_size):
+        print(green + 'Weight matches' + mc)
+        sleep(.5)
+    else:
+        print(red + 'Weight does not match' + mc)
+        sleep(2)
 
 
 # Уровни шифрования
@@ -385,7 +401,12 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
         return key, lister_row, master_password
     else:
         master_password = getpass(' Your secure word: ')
-        CloseAndRestartProgram(master_password)
+        try:
+            CloseAndRestartProgram(master_password)
+        except ZeroDivisionError:
+            print(red + '- Incorrect input -' + mc)
+            sleep(1)
+            MainFun()
         key, additional_key = GetKeys()
         lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
         return key, lister_row, master_password
@@ -431,7 +452,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
         if change_resource_or_actions == '-a':
             AddResourceData(resource, login, key, master_password, lister_row)
         CloseAndRestartProgram(change_resource_or_actions)
-
         with open(file_date_base, encoding='utf-8') as profiles:
             reader = DictReader(profiles, delimiter=',')
             count = 0   # Счетчик
