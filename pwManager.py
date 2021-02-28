@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.0 Stable For Linux (SFL)
+# Password manager v1.4.1 Stable For Linux (SFL)
 # by CISCer
 import os, sys
 from csv import DictReader, DictWriter
@@ -126,13 +126,13 @@ def DecryptoLevel3(encryption, key):
     return "".join(dec)
 
 
-def EncryptionForKeys(anything, master_password):
+def EncryptionByTwoLevels(anything, master_password):
     crypto_start = CryptoLevel3(anything, master_password)
     crypto = CryptoLevel1(crypto_start)
     return crypto
 
 
-def DecryptionForKeys(anything, master_password):
+def DecryptionByTwoLevels(anything, master_password):
     decryption_start = DecryptoLevel1(anything)
     decryption = DecryptoLevel3(decryption_start, master_password)
     return decryption
@@ -154,43 +154,51 @@ def DecryptionData(encryption_data, key, master_password, lister):
     return decryption_data
 
 
-def GreatingDependingOnDateTime():
+def GreatingDependingOnDateTime(master_password):
     """ Фунция вывода приветствия в зависимости от времени суток """
-    if os.path.exists(self_name_file) == bool(False):     # Создание файла с именем
+    def Time(name):
+        hms = datetime.datetime.today()  # Дата и время
+        hour = int(hms.hour)  # Формат часов
+        minute = int(hms.minute)  # Формат минут
+        secunde = int(hms.second)  # Формат секунд
+        # Для корректоного вывода
+        if hour < 10:
+            hour = str(0) + str(hour)
+        if minute < 10:
+            minute = str(0) + str(minute)
+        if secunde < 10:
+            secunde = str(0) + str(secunde)
+        time_format = (str(hour), str(minute), str(secunde))
+        time_now = ":".join(time_format)  # Форматирование в формат времени
+        if '04:00:00' <= time_now < '12:00:00':  # Condition morning
+            seq = (green, 'Good morning,', name, mc)
+            total = " ".join(seq)
+            return total
+        elif '12:00:00' <= time_now < '17:00:00':  # Condition day
+            seq = (green, 'Good afternoon,', name, mc)
+            total = " ".join(seq)
+            return total
+        elif '17:00:00' <= time_now <= '23:59:59':  # Condition evening
+            seq = (green, 'Good evening,', name, mc)
+            total = " ".join(seq)
+            return total
+        elif '00:00:00' <= time_now < '04:00:00':  # Condition night
+            seq = (green, 'Good night,', name, mc)
+            total = " ".join(seq)
+            return total
+
+    if os.path.exists(self_name_file) == bool(False):  # Создание файла с именем
         with open(self_name_file, "w") as self_name:
             name = input(yellow + ' - Your name or nickname: ' + mc)
-            self_name.write(name)
+            enc_name = EncryptionByTwoLevels(name, master_password)
+            self_name.write(enc_name)
             self_name.close()
-            GreatingDependingOnDateTime()
-
-    else:    # Чтение из файла с именем и вывод в консоль
+            return Time(name)
+    else:  # Чтение из файла с именем и вывод в консоль
         with open(self_name_file, "r") as self_name:
-            for name in self_name.readlines():
-                hms = datetime.datetime.today()     # Дата и время
-                hour = int(hms.hour)                # Формат часов
-                minute = int(hms.minute)            # Формат минут
-                secunde = int(hms.second)           # Формат секунд
-                # Для корректоного вывода
-                if hour < 10:
-                    hour = str(0) + str(hour)
-                if minute < 10:
-                    minute = str(0) + str(minute)
-                if secunde < 10:
-                    secunde = str(0) + str(secunde)
-                time_format = (str(hour), str(minute), str(secunde))
-                time_now = ":".join(time_format)    # Форматирование в формат времени
-                if '04:00:00' <= time_now < '12:00:00':     # Condition morning
-                    seq = (green, 'Good morning,', name, mc)
-                    print(" ".join(seq))
-                elif '12:00:00' <= time_now < '17:00:00':   # Condition day
-                    seq = (green, 'Good afternoon,', name, mc)
-                    print(" ".join(seq))
-                elif '17:00:00' <= time_now <= '23:59:59':  # Condition evening
-                    seq = (green, 'Good evening,', name, mc)
-                    print(" ".join(seq))
-                elif '00:00:00' <= time_now < '04:00:00':   # Condition night
-                    seq = (green, 'Good night,', name, mc)
-                    print(" ".join(seq))
+            dec_name = self_name.readline()
+            name = DecryptionByTwoLevels(dec_name, master_password)
+            return Time(name)
 
 
 def MakingRows(master_password):
@@ -248,8 +256,8 @@ def getUniqueSewnKey(master_password):
         for b in additional_key:
             additional_key = str(b)
         # Encryption unique-key
-        crypto_key = EncryptionForKeys(key, master_password)
-        crypto_additional_key = EncryptionForKeys(additional_key, master_password)
+        crypto_key = EncryptionByTwoLevels(key, master_password)
+        crypto_additional_key = EncryptionByTwoLevels(additional_key, master_password)
 
         with open(file_keys, mode="w", encoding='utf-8') as data:
             writer = DictWriter(data, fieldnames=['key', 'additional_key'])
@@ -265,8 +273,8 @@ def getUniqueSewnKey(master_password):
             for row in reader:
                 key = row["key"]
                 additional_key = row["additional_key"]
-            decryption_key = DecryptionForKeys(key, master_password)
-            decryption_additional_key = DecryptionForKeys(additional_key, master_password)
+            decryption_key = DecryptionByTwoLevels(key, master_password)
+            decryption_additional_key = DecryptionByTwoLevels(additional_key, master_password)
             return str(decryption_key), str(decryption_additional_key)
 
 
@@ -276,11 +284,9 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
         writer = DictWriter(data, fieldnames=['resource', 'login', 'password'])
         if check_file_date_base == bool(False):
             writer.writeheader()
-
         crypto_res = EncryptionData(resource, key, master_password, lister)
         crypto_log = EncryptionData(login, key, master_password, lister)
         crypto_pas = EncryptionData(password, key, master_password, lister)
-
         writer.writerow({
             'resource': crypto_res,
             'login': crypto_log,
@@ -293,8 +299,8 @@ def ConfirmUserPass():
         user_password = getpass(' Input: ')
         user_confirm_password = getpass(' Confirm input: ')
         return user_password, user_confirm_password
-    password, confirm_password = UserInput()
     print(blue + '\n Minimum password length 8 characters' + mc)
+    password, confirm_password = UserInput()
     # Условаия принятия пароля
     if password == confirm_password and len(password) >= 8:
         return password
@@ -308,7 +314,6 @@ def ConfirmUserPass():
 
 def ChangeTypeOfPass(resource, login, key, master_password, lister):
     """ Change type of password: user or generation """
-
     def DoForNewGeneratedPassword(resource, login, password, key, lister, master_password):
         SaveDataToFile(resource, login, password, key, lister, master_password)
         print('  Your new password - ' + green + password + mc + ' - success saved')
@@ -472,6 +477,10 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                     print('\n Resource:', green, decryption_res, mc,
                           '\n Login:   ', green, decryption_log, mc,
                           '\n Password:', green, decryption_pas, mc)
+                else:
+                    print(red + '-- Error input --' + mc)
+                    sleep(1)
+                    DecryptionBlock(master_password, key, lister_row, resource, login)
 
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
@@ -488,8 +497,10 @@ def MainFun():
                      "\n ---                 That's easy!                  --- \n" + mc)
         print(yellow + ' -- Pick a master-password --' + mc)
         master_password = ConfirmUserPass()
-        if check_lister_file == bool(False):
+        if check_file_lister == bool(False):
             MakingRows(master_password)
+        print(GreatingDependingOnDateTime(master_password))
+        sleep(1)
         # Данные для сохранения
         key, lister_row, resource, login = DataForResource(master_password)     # Ввод данных для ресурса
         DecryptionBlock(master_password, key, lister_row, resource, login)  # Start cycle
@@ -497,6 +508,9 @@ def MainFun():
     else:
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
         key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None)
+        ClearTerminal()
+        print(GreatingDependingOnDateTime(master_password))
+        sleep(1)
         ShowContent(key, master_password, lister_row)       # Показ содержимого файла с ресурсами
         DecryptionBlock(master_password, key, lister_row, None, None)  # Start cycle
 
@@ -504,9 +518,8 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password Manager v1.4.0 Stable for Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
-        GreatingDependingOnDateTime()
-        sleep(1.4)
+        print(blue, '\n' 'Password Manager v1.4.1 Stable for Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        sleep(.2)
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
