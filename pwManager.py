@@ -28,10 +28,8 @@ file_date_base = "files/main_data.dat"     # Файл, в котором леж�
 file_keys = "files/.keys.csv"  # Файл с ключами
 lister_file = "files/.lister.dat"   # Файл со строками в кол-ве 10000
 self_name_file = "files/.self_name.dat"  # Файл с именем (никнеймом)
-control_sum = 'files/.sum-sfl.dat'
 
 
-check_control_sum = os.path.exists(control_sum)
 check_file_date_base = os.path.exists(file_date_base)    # Проверка этого файла на наличие
 check_file_keys = os.path.exists(file_keys)     # Проверка на наличие
 check_file_lister = os.path.exists(lister_file)   # Проверка этого файла на наличие
@@ -39,21 +37,6 @@ gty_for_listers = 10000     # Число строк в файле listers
 
 if os.path.exists('files') == bool(False):
     os.mkdir('files')
-if check_control_sum == bool(False):
-    with open(control_sum, 'w') as file_sum:
-        data = os.path.getsize('pwManager-SFW.py')
-        file_sum.write(str(data))
-        file_sum.close()
-elif check_control_sum == bool(True):
-    f = open(control_sum)
-    original_size = f.readline()
-    if str(os.path.getsize('pwManager-SFW.py')) == str(original_size):
-        print(green + 'Weight matches' + mc)
-        sleep(.5)
-    else:
-        print(red + 'Weight does not match' + mc)
-        sleep(2)
-
 
 # Уровни шифрования
 def CryptoLevel1(text, encoding='utf-8', errors='surrogatepass'):
@@ -477,10 +460,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                     print('\n Resource:', green, decryption_res, mc,
                           '\n Login:   ', green, decryption_log, mc,
                           '\n Password:', green, decryption_pas, mc)
-                else:
-                    print(red + '-- Error input --' + mc)
-                    sleep(1)
-                    DecryptionBlock(master_password, key, lister_row, resource, login)
 
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
