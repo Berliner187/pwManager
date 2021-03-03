@@ -323,7 +323,6 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
                     DoForNewGeneratedPassword(resource, login, password, key, lister, master_password)
 
     elif change == 2:  # Save user password
-        print(blue + '\n Minimum password length 8 characters' + mc)
         password = ConfirmUserPass()  # Input password
         SaveDataToFile(resource, login, password, key, lister, master_password)
 
@@ -422,8 +421,8 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
         TextAddNewResource()
 
         def TextChangePassword():
-            print(green + ' 1' + yellow + ' - Generation new pas \n' +
-                  green + ' 2' + yellow + ' - Save your pas \n' + mc)
+            print(green + ' 1' + yellow + ' - Generation new password \n' +
+                  green + ' 2' + yellow + ' - Save your password \n' + mc)
 
         if check_file_date_base == bool(False):
             TextChangePassword()
@@ -439,6 +438,16 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
         change_resource_or_actions = input('\n Change: ')
         if change_resource_or_actions == '-a':
             AddResourceData(resource, login, key, master_password, lister_row)
+        elif change_resource_or_actions == '-u':
+            def ActionsUpdate(command):
+                os.system(command)
+            ClearTerminal()
+            ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
+            ActionsUpdate('cp pwManager/pwManager.py ../; rm -r pwManager/')
+            ClearTerminal()
+            print(green + ' -- Update successfully! -- ' + mc)
+            sleep(2)
+            ActionsUpdate('./pwManager.py')
         CloseAndRestartProgram(change_resource_or_actions)
         with open(file_date_base, encoding='utf-8') as profiles:
             reader = DictReader(profiles, delimiter=',')
@@ -497,7 +506,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password Manager v1.4.1 Stable for Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n' 'Password Manager v1.4.1 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         sleep(.2)
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
