@@ -443,7 +443,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 os.system(command)
             ClearTerminal()
             ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
-            ActionsUpdate('cp pwManager/pwManager.py ../; rm -r pwManager/')
+            ActionsUpdate('cp pwManager/pwManager.py .; rm -r pwManager/')
             ClearTerminal()
             print(green + ' -- Update successfully! -- ' + mc)
             sleep(2)
