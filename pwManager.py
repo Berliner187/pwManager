@@ -436,6 +436,23 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
     if check_file_date_base == bool(True):
         # Decryption mechanism
         change_resource_or_actions = input('\n Change: ')
+        if change_resource_or_actions == '-a':
+            AddResourceData(resource, login, key, master_password, lister_row)
+        elif change_resource_or_actions == '-u':
+            def ActionsUpdate(command):
+                os.system(command)
+            ClearTerminal()
+            main_file = 'pwManager.py'
+            ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
+            # Доп (сравнить суммы)
+            if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
+                ActionsUpdate('cp pwManager/pwManager.py .; rm -r pwManager/')
+                ClearTerminal()
+                print(green + ' -- Update successfully! -- ' + mc)
+                sleep(1)
+                ActionsUpdate('./pwManager.py')
+            else:
+                print(yellow + ' -- Nothing to update -- ' + mc)
         with open(file_date_base, encoding='utf-8') as profiles:
             reader = DictReader(profiles, delimiter=',')
             count = 0   # Счетчик
@@ -457,18 +474,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                           '\n Login:   ', green, decryption_log, mc,
                           '\n Password:', green, decryption_pas, mc)
 
-        if change_resource_or_actions == '-a':
-            AddResourceData(resource, login, key, master_password, lister_row)
-        elif change_resource_or_actions == '-u':
-            def ActionsUpdate(command):
-                os.system(command)
-            ClearTerminal()
-            ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
-            ActionsUpdate('cp pwManager/pwManager.py .; rm -r pwManager/')
-            ClearTerminal()
-            print(green + ' -- Update successfully! -- ' + mc)
-            sleep(2)
-            ActionsUpdate('./pwManager.py')
         CloseAndRestartProgram(change_resource_or_actions)
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
