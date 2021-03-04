@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Password manager v1.4.1 Stable For Linux (SFL)
-# by CISCer
+# by Berliner187
 import os, sys
 from csv import DictReader, DictWriter
 from base64 import urlsafe_b64encode, urlsafe_b64decode
@@ -335,7 +335,7 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
         print(red + '  -- Error of change. Please, change again --  ' + mc)
         sleep(1)
         ChangeTypeOfPass(resource, login, key, master_password, lister)
-    sleep(.6)
+    sleep(1.3)
     ClearTerminal()
 
     if check_file_date_base == bool(False):
@@ -436,19 +436,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
     if check_file_date_base == bool(True):
         # Decryption mechanism
         change_resource_or_actions = input('\n Change: ')
-        if change_resource_or_actions == '-a':
-            AddResourceData(resource, login, key, master_password, lister_row)
-        elif change_resource_or_actions == '-u':
-            def ActionsUpdate(command):
-                os.system(command)
-            ClearTerminal()
-            ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
-            ActionsUpdate('cp pwManager/pwManager.py .; rm -r pwManager/')
-            ClearTerminal()
-            print(green + ' -- Update successfully! -- ' + mc)
-            sleep(2)
-            ActionsUpdate('./pwManager.py')
-        CloseAndRestartProgram(change_resource_or_actions)
         with open(file_date_base, encoding='utf-8') as profiles:
             reader = DictReader(profiles, delimiter=',')
             count = 0   # Счетчик
@@ -470,6 +457,19 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                           '\n Login:   ', green, decryption_log, mc,
                           '\n Password:', green, decryption_pas, mc)
 
+        if change_resource_or_actions == '-a':
+            AddResourceData(resource, login, key, master_password, lister_row)
+        elif change_resource_or_actions == '-u':
+            def ActionsUpdate(command):
+                os.system(command)
+            ClearTerminal()
+            ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
+            ActionsUpdate('cp pwManager/pwManager.py .; rm -r pwManager/')
+            ClearTerminal()
+            print(green + ' -- Update successfully! -- ' + mc)
+            sleep(2)
+            ActionsUpdate('./pwManager.py')
+        CloseAndRestartProgram(change_resource_or_actions)
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
         AddResourceData(resource, login, key, master_password, lister_row)
@@ -506,7 +506,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password Manager v1.4.1 Beta-Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n' 'Password Manager v1.4.1 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
