@@ -488,7 +488,7 @@ def MainFun():
         if check_file_lister == bool(False):
             MakingRows(master_password)
         print(GreatingDependingOnDateTime(master_password))
-        sleep(1)
+        sleep(.7)
         # Данные для сохранения
         key, lister_row, resource, login = DataForResource(master_password)     # Ввод данных для ресурса
         DecryptionBlock(master_password, key, lister_row, resource, login)  # Start cycle
@@ -498,7 +498,7 @@ def MainFun():
         key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None)
         ClearTerminal()
         print(GreatingDependingOnDateTime(master_password))
-        sleep(1)
+        sleep(.7)
         ShowContent(key, master_password, lister_row)       # Показ содержимого файла с ресурсами
         DecryptionBlock(master_password, key, lister_row, None, None)  # Start cycle
 
@@ -506,8 +506,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password Manager v1.4.1 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
-        sleep(.2)
+        print(blue, '\n' 'Password Manager v1.4.1 Beta-Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
