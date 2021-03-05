@@ -429,13 +429,12 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
         change_resource_or_actions = input('\n Change: ')
         if change_resource_or_actions == '-a':
             AddResourceData(resource, login, key, master_password, lister_row)
-        elif change_resource_or_actions == '-u':
+        elif change_resource_or_actions == '-u':    # Обновление
             def ActionsUpdate(command):
                 os.system(command)
             ClearTerminal()
             main_file = 'pwManager.py'
             ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
-            # Доп (сравнить суммы)
             if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
                 ActionsUpdate('cp pwManager/pwManager.py .; rm -r pwManager/')
                 ClearTerminal()
