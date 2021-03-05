@@ -445,7 +445,9 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             else:
                 ClearTerminal()
                 print(yellow + ' -- Nothing to update -- ' + mc)
+                ActionsUpdate('rm -r pwManager/')
                 sleep(.7)
+                ShowContent(key, master_password, lister_row)
                 DecryptionBlock(master_password, key, lister_row, resource, login)
         elif change_resource_or_actions == '-x':  # Condition exit
             ClearTerminal()  # Clearing terminal
@@ -469,7 +471,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                         encryption_resource = line["resource"]
                         encryption_login = line["login"]
                         encryption_password = line["password"]
-
                         # Decryption data from file
                         decryption_res = DecryptionData(encryption_resource, key, master_password, lister_row)
                         decryption_log = DecryptionData(encryption_login, key, master_password, lister_row)
