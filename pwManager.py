@@ -444,8 +444,8 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 ActionsUpdate('./pwManager.py')
             else:
                 ClearTerminal()
-                print(yellow + ' -- Nothing to update -- ' + mc)
-                ActionsUpdate('rm -r pwManager/')
+                print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
+                ActionsUpdate('rm -r pwManager/ -y')
                 sleep(.7)
                 ShowContent(key, master_password, lister_row)
         elif change_resource_or_actions == '-x':  # Condition exit
