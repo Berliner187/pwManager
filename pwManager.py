@@ -446,7 +446,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
                 ActionsUpdate('rm -r pwManager/')
                 sleep(.7)
-                ShowContent(key, master_password, lister_row)
         elif change_resource_or_actions == '-x':  # Condition exit
             ClearTerminal()  # Clearing terminal
             print(blue, ' --- Program is closet --- \n', mc)
@@ -477,7 +476,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                         print('\n Resource:', green, decryption_res, mc,
                               '\n Login:   ', green, decryption_log, mc,
                               '\n Password:', green, decryption_pas, mc)
-
+        ShowContent(key, master_password, lister_row)
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
         AddResourceData(resource, login, key, master_password, lister_row)
@@ -491,7 +490,7 @@ def MainFun():
         print(blue + "\n  - Encrypt your passwords with one master-password -    "
                      "\n  -           No resources saved. Add them!         -  \n" +
                      "\n ---                 That's easy!                  --- \n" + mc)
-        print(yellow + ' -- Pick a master-password --' + mc)
+        print(yellow + ' -- Pick a master-password -- ' + mc)
         master_password = ConfirmUserPass()
         if check_file_lister == bool(False):
             MakingRows(master_password)
