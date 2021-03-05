@@ -448,7 +448,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 ActionsUpdate('rm -r pwManager/')
                 sleep(.7)
                 ShowContent(key, master_password, lister_row)
-                DecryptionBlock(master_password, key, lister_row, resource, login)
         elif change_resource_or_actions == '-x':  # Condition exit
             ClearTerminal()  # Clearing terminal
             print(blue, ' --- Program is closet --- \n', mc)
