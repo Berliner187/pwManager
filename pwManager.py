@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.1 Stable For Linux (SFL)
+# Password manager v1.4.2 Stable For Linux (SFL)
 # by Berliner187
 import os, sys
 from csv import DictReader, DictWriter
@@ -360,20 +360,8 @@ def ShowContent(key, master_password, lister):
 
         print(blue + '\n  - Enter "-r" to restart, "-x" to exit'
                      '\n  - Enter "-a", to add new resource',
+                     '\n  - Enter "-u", to update program',
                      yellow, '\n Select resource by number', mc)
-
-
-def CloseAndRestartProgram(change):
-    if change == '-x':  # Condition exit
-        ClearTerminal()  # Clearing terminal
-        print(blue, ' --- Program is closet --- \n', mc)
-        quit()  # Exit
-    elif change == '-r':  # Condition restart
-        ClearTerminal()  # Clearing terminal
-        print('\n', green, ' -- Restart -- ', mc)  # Show message of restart
-        sleep(.5)
-        ClearTerminal()
-        RestartProgram()  # Restart program
 
 
 def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
@@ -389,7 +377,10 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
     else:
         master_password = getpass(' Your secure word: ')
         try:
-            CloseAndRestartProgram(master_password)
+            if master_password == '-x':  # Condition exit
+                ClearTerminal()  # Clearing terminal
+                print(blue, ' --- Program is closet --- \n', mc)
+                sys.exit()  # Exit
         except ZeroDivisionError:
             print(red + '- Incorrect input -' + mc)
             sleep(1)
@@ -452,29 +443,42 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 sleep(1)
                 ActionsUpdate('./pwManager.py')
             else:
+                ClearTerminal()
                 print(yellow + ' -- Nothing to update -- ' + mc)
-        with open(file_date_base, encoding='utf-8') as profiles:
-            reader = DictReader(profiles, delimiter=',')
-            count = 0   # Счетчик
-            for line in reader:  # Iterating over lines file
-                count += 1
-                if count == int(change_resource_or_actions):   # Выбор ресурса по номеру
-                    ClearTerminal()
-                    ShowContent(key, master_password, lister_row)
-                    encryption_resource = line["resource"]
-                    encryption_login = line["login"]
-                    encryption_password = line["password"]
+                sleep(.7)
+                DecryptionBlock(master_password, key, lister_row, resource, login)
+        elif change_resource_or_actions == '-x':  # Condition exit
+            ClearTerminal()  # Clearing terminal
+            print(blue, ' --- Program is closet --- \n', mc)
+            sys.exit()  # Exit
+        elif change_resource_or_actions == '-r':  # Condition restart
+            ClearTerminal()  # Clearing terminal
+            print('\n', green, ' -- Restart -- ', mc)  # Show message of restart
+            sleep(.5)
+            ClearTerminal()
+            RestartProgram()  # Restart program
+        else:
+            with open(file_date_base, encoding='utf-8') as profiles:
+                reader = DictReader(profiles, delimiter=',')
+                count = 0   # Счетчик
+                for line in reader:  # Iterating over lines file
+                    count += 1
+                    if count == int(change_resource_or_actions):   # Выбор ресурса по номеру
+                        ClearTerminal()
+                        ShowContent(key, master_password, lister_row)
+                        encryption_resource = line["resource"]
+                        encryption_login = line["login"]
+                        encryption_password = line["password"]
 
-                    # Decryption data from file
-                    decryption_res = DecryptionData(encryption_resource, key, master_password, lister_row)
-                    decryption_log = DecryptionData(encryption_login, key, master_password, lister_row)
-                    decryption_pas = DecryptionData(encryption_password, key, master_password, lister_row)
+                        # Decryption data from file
+                        decryption_res = DecryptionData(encryption_resource, key, master_password, lister_row)
+                        decryption_log = DecryptionData(encryption_login, key, master_password, lister_row)
+                        decryption_pas = DecryptionData(encryption_password, key, master_password, lister_row)
 
-                    print('\n Resource:', green, decryption_res, mc,
-                          '\n Login:   ', green, decryption_log, mc,
-                          '\n Password:', green, decryption_pas, mc)
+                        print('\n Resource:', green, decryption_res, mc,
+                              '\n Login:   ', green, decryption_log, mc,
+                              '\n Password:', green, decryption_pas, mc)
 
-        CloseAndRestartProgram(change_resource_or_actions)
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
         AddResourceData(resource, login, key, master_password, lister_row)
@@ -511,7 +515,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password Manager v1.4.1 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n' 'Password Manager v1.4.2 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
