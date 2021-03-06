@@ -476,6 +476,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                         print('\n Resource:', green, decryption_res, mc,
                               '\n Login:   ', green, decryption_log, mc,
                               '\n Password:', green, decryption_pas, mc)
+                        
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
         AddResourceData(resource, login, key, master_password, lister_row)
