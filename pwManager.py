@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Password manager v1.4.2 Stable For Linux (SFL)
 # by Berliner187
+# Resources and all data related to them are encrypted with a single password
 import os, sys
 from csv import DictReader, DictWriter
 from base64 import urlsafe_b64encode, urlsafe_b64decode
@@ -89,7 +90,7 @@ def DecryptoLevel2(password, key, lister):
 
 def CryptoLevel3(message, key):
     """ Base64-based encryption """
-    key = str(key)
+    key, message = str(key), str(message)
     enc = []
     for i in range(len(message)):
         key_c = key[i % len(key)]
@@ -109,13 +110,13 @@ def DecryptoLevel3(encryption, key):
     return "".join(dec)
 
 
-def EncryptionByTwoLevels(anything, master_password):
+def EncryptionByTwoLevels(anything, master_password):   # Encryption by two levels
     crypto_start = CryptoLevel3(anything, master_password)
     crypto = CryptoLevel1(crypto_start)
     return crypto
 
 
-def DecryptionByTwoLevels(anything, master_password):
+def DecryptionByTwoLevels(anything, master_password):   # Decryption by two levels
     decryption_start = DecryptoLevel1(anything)
     decryption = DecryptoLevel3(decryption_start, master_password)
     return decryption
@@ -186,7 +187,7 @@ def GreatingDependingOnDateTime(master_password):
 
 def MakingRows(master_password):
     ClearTerminal()
-    print('Making files. Please, wait ...')
+    print(yellow + 'Making files. Please, wait ...' + mc)
     global gty_for_listers
     for q in range(gty_for_listers):
         symb = []
@@ -202,8 +203,9 @@ def MakingRows(master_password):
             lister.write(total)  # Recording an encrypted message
             lister.write('\n')  # Line break
             lister.close()  # Closing the file to save data
-    print('\n\n -- All right -- \n')
-    sleep(1)
+    ClearTerminal()
+    print(green + '\n\n ---  All right! --- \n' + mc)
+    sleep(.7)
     ClearTerminal()
 
 
@@ -230,17 +232,14 @@ def getUniqueSewnKey(master_password):
         for i in range(52):
             list_of_key.append(i)
         list_of_additional_key = []
-        for a in range(gty_for_listers):  # Заполнения массивва в диапозоне кол-ва строк файла "lister.dat"
+        for a in range(gty_for_listers):  # Заполнения массива в диапозоне кол-ва строк файла "lister.dat"
             list_of_additional_key.append(a)
-        key = random.choices(list_of_key)
-        for j in list_of_key:
-            key = str(j)
-        additional_key = random.choices(list_of_additional_key)  # Выбор случайного значения из массива
-        for b in additional_key:
-            additional_key = str(b)
+        key = random.choice(list_of_key)
+        additional_key = random.choice(list_of_additional_key)  # Выбор случайного значения из массива
         # Encryption unique-key
         crypto_key = EncryptionByTwoLevels(key, master_password)
         crypto_additional_key = EncryptionByTwoLevels(additional_key, master_password)
+        key, additional_key = str(key), str(additional_key)
 
         with open(file_keys, mode="w", encoding='utf-8') as data:
             writer = DictWriter(data, fieldnames=['key', 'additional_key'])
@@ -326,11 +325,8 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
         password = ConfirmUserPass()  # Input password
         SaveDataToFile(resource, login, password, key, lister, master_password)
 
-        print(green + '\n  - Your password ' +
-              '*' * len(password) +
-              password[-1] +
-              password[-2] +
-              ' successfully saved -  ' + mc)
+        print(green + '\n  - Your password successfully saved! -  ' + mc)
+        sleep(1)
     else:
         print(red + '  -- Error of change. Please, change again --  ' + mc)
         sleep(1)
@@ -338,7 +334,7 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
     sleep(1.3)
     ClearTerminal()
 
-    if check_file_date_base == bool(False):
+    if check_file_date_base == bool(False): # Перезапуск для корректной работы дальше
         RestartProgram()
     else:
         ShowContent(key, master_password, lister)       # Показ содержимого файла с ресурсами
@@ -365,6 +361,7 @@ def ShowContent(key, master_password, lister):
 
 
 def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
+    """ Get secure_word, unique-keys """
     def GetKeys():
         key, additional_key = getUniqueSewnKey(master_password)  # Получение новых ключей
         return int(key), int(additional_key)
@@ -409,11 +406,10 @@ def DataForResource(master_password):
 def DecryptionBlock(master_password, key, lister_row, resource, login):
     """ Show resources and decrypt them with keys """
     def AddResourceData(resource, login, key, master_password, lister_row):
-        TextAddNewResource()
-
         def TextChangePassword():
             print(green + ' 1' + yellow + ' - Generation new password \n' +
                   green + ' 2' + yellow + ' - Save your password \n' + mc)
+        TextAddNewResource()
 
         if check_file_date_base == bool(False):
             TextChangePassword()
@@ -427,9 +423,9 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
     if check_file_date_base == bool(True):
         # Decryption mechanism
         change_resource_or_actions = input('\n Change: ')
-        if change_resource_or_actions == '-a':
+        if change_resource_or_actions == '-a':  # Добавление нового ресурса
             AddResourceData(resource, login, key, master_password, lister_row)
-        elif change_resource_or_actions == '-u':    # Обновление
+        elif change_resource_or_actions == '-u':    # Обновление программы
             def ActionsUpdate(command):
                 os.system(command)
             ClearTerminal()
@@ -446,13 +442,13 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
                 ActionsUpdate('rm -r pwManager/')
                 sleep(.7)
-        elif change_resource_or_actions == '-x':  # Condition exit
+        elif change_resource_or_actions == '-x':  # Условие выхода
             ClearTerminal()  # Clearing terminal
             print(blue, ' --- Program is closet --- \n', mc)
             sys.exit()  # Exit
-        elif change_resource_or_actions == '-r':  # Condition restart
+        elif change_resource_or_actions == '-r':  # Условие перезапуска
             ClearTerminal()  # Clearing terminal
-            print('\n', green, ' -- Restart -- ', mc)  # Show message of restart
+            print('\n', green, ' -- Restart -- ', mc)
             sleep(.5)
             ClearTerminal()
             RestartProgram()  # Restart program
@@ -468,15 +464,15 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                         encryption_resource = line["resource"]
                         encryption_login = line["login"]
                         encryption_password = line["password"]
-                        # Decryption data from file
+                        # Дешифровка ресурса
                         decryption_res = DecryptionData(encryption_resource, key, master_password, lister_row)
                         decryption_log = DecryptionData(encryption_login, key, master_password, lister_row)
                         decryption_pas = DecryptionData(encryption_password, key, master_password, lister_row)
-
+                        # Вывод данных по ресурсу
                         print('\n Resource:', green, decryption_res, mc,
                               '\n Login:   ', green, decryption_log, mc,
                               '\n Password:', green, decryption_pas, mc)
-        ShowContent(key, master_password, lister_row)
+
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
         AddResourceData(resource, login, key, master_password, lister_row)
@@ -490,7 +486,7 @@ def MainFun():
         print(blue + "\n  - Encrypt your passwords with one master-password -    "
                      "\n  -           No resources saved. Add them!         -  \n" +
                      "\n ---                 That's easy!                  --- \n" + mc)
-        print(yellow + ' -- Pick a master-password -- ' + mc)
+        print(yellow + '\n -- Pick a master-password -- ' + mc)
         master_password = ConfirmUserPass()
         if check_file_lister == bool(False):
             MakingRows(master_password)
