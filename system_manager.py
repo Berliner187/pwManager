@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Password manager v1.5.0 Stable For Linux (SFL)
+# Password Manager Server Solution v1.0.0 Stable For Linux (SFL)
+# Based on stable version 1.4.2
 # by Berliner187
 # Resources and all data related to them are encrypted with a single password
 import os, sys
@@ -10,9 +11,9 @@ import datetime
 from time import sleep
 from getpass import getpass
 
-
 yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # Colours
 main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
+lyster_of_large_register = 'abcdefghijklmnopqrstuvwxyz'
 
 
 def ClearTerminal():
@@ -26,9 +27,8 @@ def RestartProgram():
 
 
 ClearTerminal()
-print(blue, '\n' 'Password Manager v1.5.0 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
-print(yellow + ' -- Enter your login  ' + mc)
-user_input_name = input(' Enter: ')
+print(blue, '\n' ' Password Manager Server Solution v1.0.0 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+user_input_name = input(yellow + ' -- Enter your login: ' + mc)
 # Files for work program
 users_folder = 'users/'
 if os.path.exists(users_folder) == bool(False):     # Папка с юзерами
@@ -128,6 +128,13 @@ def DecryptionData(encryption_data, key, master_password, lister):
     return decryption_data
 
 
+def getUserSavedName(master_password):
+    with open(self_name_file, "r") as self_name:
+        dec_name = self_name.readline()
+        name = DecryptionByTwoLevels(dec_name, master_password)
+    return name
+
+
 def GreatingDependingOnDateTime(master_password):
     """ Фунция вывода приветствия в зависимости от времени суток """
     def Time(name):
@@ -169,10 +176,8 @@ def GreatingDependingOnDateTime(master_password):
             self_name.close()
             return Time(name)
     else:  # Чтение из файла с именем и вывод в консоль
-        with open(self_name_file, "r") as self_name:
-            dec_name = self_name.readline()
-            name = DecryptionByTwoLevels(dec_name, master_password)
-            return Time(name)
+        name = getUserSavedName(master_password)
+        return Time(name)
 
 
 def MakingRows(master_password):
@@ -333,11 +338,11 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
 
 def ShowContent(key, master_password, lister):
     """ Показ всех сохраненных ресурсов """
-    ClearTerminal()
     with open(file_date_base, encoding='utf-8') as data:
         s = 0
         reader = DictReader(data, delimiter=',')
-        print(yellow + '\n   --- Saved resources ---   ' + '\n'*3 + mc)
+        name = getUserSavedName(master_password)
+        print(yellow + '\n   --- ' + name + "'s Saved resources --- " + '\n'*3 + mc)
         for line in reader:
             encryption_resource = line["resource"]
             decryption_res = DecryptionData(encryption_resource, key, master_password, lister)
@@ -348,7 +353,7 @@ def ShowContent(key, master_password, lister):
                      '\n  - Enter "-a" to add new resource    ',
                      '\n  - Enter "-u" to update the program from the repository',
                      '\n  - Enter "-q" to change another user ',
-              yellow, '\n Select resource by number', mc)
+              yellow, '\n  Select resource by number', mc)
 
 
 def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
@@ -424,7 +429,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 main_file = 'pwManager.py'
                 ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
                 if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                    ActionsUpdate('cp pwManager/pwManager.py .; rm -r pwManager/')
+                    ActionsUpdate('cp pwManager/system_manager .; rm -r pwManager/')
                     ClearTerminal()
                     print(green + ' -- Update successfully! -- ' + mc)
                     sleep(1)
@@ -497,6 +502,7 @@ def MainFun(master_password):
         ClearTerminal()
         print(GreatingDependingOnDateTime(master_password))
         sleep(.7)
+        ClearTerminal()
         ShowContent(key, master_password, lister_row)       # Показ содержимого файла с ресурсами
         DecryptionBlock(master_password, key, lister_row, None, None)  # Start cycle
 
@@ -504,7 +510,7 @@ def MainFun(master_password):
 if __name__ == '__main__':
     try:  # Running a program through an exception
         if os.path.exists(main_folder) == bool(False):
-            print(yellow + ' - There is no such account. Create? - ')
+            print(yellow + ' - There is no such account. Create? - ' + mc)
             change = input('\n (y/n): ')
             if change == 'y':
                 if os.path.exists(users_folder + user_input_name) == bool(False):  # Папка с юзером
