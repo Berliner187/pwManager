@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.2 Stable For Linux (SFL)
+# Password manager v1.4.3 Stable For Linux (SFL)
 # by Berliner187
 # Resources and all data related to them are encrypted with a single password
 import os, sys
@@ -9,6 +9,7 @@ import random
 import datetime
 from time import sleep
 from getpass import getpass
+from shutil import copyfile
 
 
 def ClearTerminal():
@@ -34,10 +35,11 @@ self_name_file = "files/.self_name.dat"  # Файл с именем (никне�
 check_file_date_base = os.path.exists(file_date_base)    # Проверка этого файла на наличие
 check_file_keys = os.path.exists(file_keys)     # Проверка на наличие
 check_file_lister = os.path.exists(lister_file)   # Проверка этого файла на наличие
-gty_for_listers = 10000     # Число строк в файле listers
+gty_for_listers = 1000     # Число строк в файле listers
 
 if os.path.exists('files') == bool(False):
     os.mkdir('files')
+
 
 # Уровни шифрования
 def CryptoLevel1(text, encoding='utf-8', errors='surrogatepass'):
@@ -228,14 +230,8 @@ def getUniqueSewnKey(master_password):
     """ Make unique key """
     global gty_for_listers
     if check_file_keys == bool(False):
-        list_of_key = []
-        for i in range(52):
-            list_of_key.append(i)
-        list_of_additional_key = []
-        for a in range(gty_for_listers):  # Заполнения массива в диапозоне кол-ва строк файла "lister.dat"
-            list_of_additional_key.append(a)
-        key = random.choice(list_of_key)
-        additional_key = random.choice(list_of_additional_key)  # Выбор случайного значения из массива
+        key = random.randrange(52)
+        additional_key = random.randrange(gty_for_listers)  # Выбор случайного значения из массива
         # Encryption unique-key
         crypto_key = EncryptionByTwoLevels(key, master_password)
         crypto_additional_key = EncryptionByTwoLevels(additional_key, master_password)
@@ -334,7 +330,7 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
     sleep(1.3)
     ClearTerminal()
 
-    if check_file_date_base == bool(False): # Перезапуск для корректной работы дальше
+    if check_file_date_base == bool(False):     # Перезапуск для корректной работы дальше
         RestartProgram()
     else:
         ShowContent(key, master_password, lister)       # Показ содержимого файла с ресурсами
@@ -355,8 +351,9 @@ def ShowContent(key, master_password, lister):
             print(str(s) + '. ' + decryption_res)    # Decryption resource
 
         print(blue + '\n  - Enter "-r" to restart, "-x" to exit'
-                     '\n  - Enter "-a", to add new resource',
-                     '\n  - Enter "-u", to update program',
+                     '\n  - Enter "-a" to add new resource',
+                     '\n  - Enter "-u" to update program',
+                     '\n  - Enter "-d" to remove resource',
                      yellow, '\n Select resource by number', mc)
 
 
@@ -453,6 +450,39 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             sleep(.5)
             ClearTerminal()
             RestartProgram()  # Restart program
+        elif change_resource_or_actions == '-d':    # Удаление ресурса
+            print(blue + ' -- Change by number resource -- ' + mc)
+            change_res_by_num = int(input(yellow + '\n - Resource number: ' + mc))
+            # Выгрузка старого
+            with open(file_date_base, encoding='utf-8') as saved_resource:
+                reader = DictReader(saved_resource, delimiter=',')
+                mas_res, mas_log, mas_pas = [], [], []
+                cnt = 0
+                for row in reader:
+                    cnt += 1
+                    if cnt == change_res_by_num:
+                        cnt += 1
+                    else:
+                        mas_res.append(row["resource"])
+                        mas_log.append(row["login"])
+                        mas_pas.append(row["password"])
+                saved_resource.close()
+            # Перенос в новый файл
+            new_file_date_base = 'new_data.dat'
+            with open(new_file_date_base, mode="a", encoding='utf-8') as new_data:
+                writer = DictWriter(new_data, fieldnames=['resource', 'login', 'password'])
+                writer.writeheader()
+                for i in range(cnt - 2):
+                    writer.writerow({
+                        'resource': mas_res[i],
+                        'login': mas_log[i],
+                        'password': mas_pas[i]})
+                new_data.close()
+            copyfile(new_file_date_base, file_date_base)
+            os.system('rm ' + new_file_date_base)
+            print(green + '\n -- Successfully -- ' + mc)
+            sleep(1)
+            RestartProgram()
         else:
             with open(file_date_base, encoding='utf-8') as profiles:
                 reader = DictReader(profiles, delimiter=',')
@@ -483,14 +513,13 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
 def MainFun():
     """ The main function responsible for the operation of the program """
     if check_file_date_base == bool(False):   # Если файла нет, идет создание файла с ресурсами
-        ClearTerminal()     # Очистка терминала
         print(blue + "\n  - Encrypt your passwords with one master-password -    "
                      "\n  -           No resources saved. Add them!         -  \n" +
                      "\n ---                 That's easy!                  --- \n" + mc)
         print(yellow + '\n -- Pick a master-password -- '
-                       '\n - Только не используйте свой банковский пароль, '
-                        '\n  я не сильно вкладывался в безопасность '
-                        '\n  этого приложения ' + mc)
+                       '\n - Только не используйте свой банковский пароль,'
+                       '\n      я не сильно вкладывался в безопасность    '
+                       '\n              этой программы ' + mc)
         master_password = ConfirmUserPass()
         if check_file_lister == bool(False):
             MakingRows(master_password)
@@ -513,7 +542,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password Manager v1.4.2 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n' 'Password Manager v1.4.3 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
