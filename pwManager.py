@@ -21,7 +21,7 @@ def RestartProgram():
     os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
-yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # Colours
+yellow, blue, green, mc, red = "\033[33m", "\036[34m", "\033[32m", "\033[0m", "\033[31m"  # Colours
 main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 
 # Files for work program
