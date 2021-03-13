@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password Manager Server Solution v1.0.0 Stable For Linux (SFL)
+# Password Manager Server Solution v1.0.1 Stable For Linux (SFL)
 # Based on stable version 1.4.2
 # by Berliner187
 # Resources and all data related to them are encrypted with a single password
@@ -11,14 +11,14 @@ import datetime
 from time import sleep
 from getpass import getpass
 
-yellow, blue, green, mc, red = "\033[33m", "\033[34m", "\033[32m", "\033[0m", "\033[31m"  # Colours
+yellow, blue, green, mc, red = "\033[33m", "\033[36m", "\033[32m", "\033[0m", "\033[31m"  # Colours
 main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
-lyster_of_large_register = 'abcdefghijklmnopqrstuvwxyz'
+lyster_of_large_register = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=!@#$%^&*()"№;:?'
 
 
 def ClearTerminal():
     """ Clear terminal """
-    os.system("clear")
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def RestartProgram():
@@ -27,8 +27,42 @@ def RestartProgram():
 
 
 ClearTerminal()
-print(blue, '\n' ' Password Manager Server Solution v1.0.0 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+
+# from asciimatics.effects import Cycle, Stars
+# from asciimatics.renderers import FigletText
+# from asciimatics.scene import Scene
+# from asciimatics.screen import Screen
+#
+# cnt = 5
+# for i in range(cnt):
+#     def demo(screen):
+#         effects = [
+#             Cycle(
+#                 screen,
+#                 FigletText("Password", font='big'),
+#                 int(screen.height / 2 - 8)),
+#             Cycle(
+#                 screen,
+#                 FigletText("Manager", font='big'),
+#                 int(screen.height / 2 + 3)),
+#             Stars(screen, 200)
+#         ]
+#         screen.play([Scene(effects, 20)])
+#
+#
+#     Screen.wrapper(demo)
+# ClearTerminal()
+
+
+print(blue, '\n' ' Password Manager Server Solution v1.0.1 Stable For Linux (SFL) \n by Berliner187' '\n', mc)
 user_input_name = input(yellow + ' -- Enter your login: ' + mc)
+for syb in user_input_name:
+    for check_register in lyster_of_large_register:
+        if syb == check_register:
+            ClearTerminal()
+            print(red + '\n\n\n -- Unacceptable symbols in login -- ' + red)
+            sleep(1)
+            RestartProgram()
 # Files for work program
 users_folder = 'users/'
 if os.path.exists(users_folder) == bool(False):     # Папка с юзерами
@@ -319,14 +353,13 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
     elif change == 2:  # Save user password
         password = ConfirmUserPass()  # Input password
         SaveDataToFile(resource, login, password, key, lister, master_password)
-
+        ClearTerminal()
         print(green + '\n  - Your password successfully saved! -  ' + mc)
-        sleep(1)
     else:
         print(red + '  -- Error of change. Please, change again --  ' + mc)
         sleep(1)
         ChangeTypeOfPass(resource, login, key, master_password, lister)
-    sleep(1.3)
+    sleep(2)
     ClearTerminal()
 
     if check_file_date_base == bool(False):     # Перезапуск для корректной работы дальше
@@ -348,7 +381,6 @@ def ShowContent(key, master_password, lister):
             decryption_res = DecryptionData(encryption_resource, key, master_password, lister)
             s += 1
             print(str(s) + '. ' + decryption_res)    # Decryption resource
-
         print(blue + '\n  - Enter "-x" to exit                ',
                      '\n  - Enter "-a" to add new resource    ',
                      '\n  - Enter "-u" to update the program from the repository',
@@ -426,14 +458,14 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 def ActionsUpdate(command):
                     os.system(command)
                 ClearTerminal()
-                main_file = 'pwManager.py'
+                main_file = 'system_manager.py'
                 ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
                 if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                    ActionsUpdate('cp pwManager/system_manager .; rm -r pwManager/')
+                    ActionsUpdate('cp pwManager/' + main_file + ' .; rm -r pwManager/')
                     ClearTerminal()
                     print(green + ' -- Update successfully! -- ' + mc)
                     sleep(1)
-                    ActionsUpdate('./pwManager.py')
+                    ActionsUpdate('./' + main_file)
                 else:
                     ClearTerminal()
                     print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
@@ -507,25 +539,24 @@ def MainFun(master_password):
         DecryptionBlock(master_password, key, lister_row, None, None)  # Start cycle
 
 
-if __name__ == '__main__':
-    try:  # Running a program through an exception
-        if os.path.exists(main_folder) == bool(False):
-            print(yellow + ' - There is no such account. Create? - ' + mc)
-            change = input('\n (y/n): ')
-            if change == 'y':
-                if os.path.exists(users_folder + user_input_name) == bool(False):  # Папка с юзером
-                    os.mkdir(users_folder + user_input_name)
-                main_folder = users_folder + user_input_name + '/' + 'files/'  # Папка с юзерскими файлами
-                if os.path.exists(main_folder) == bool(False):
-                    os.mkdir(main_folder)
-                password = ConfirmUserPass()
-                MainFun(password)
-            if change == 'n':
-                quit()
-        else:
-            MainFun(None)
-    except ValueError:  # With this error (not entered value), the program is restarted
-        print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
-        sleep(2)
-        ClearTerminal()
-        RestartProgram()
+try:  # Running a program through an exception
+    if os.path.exists(main_folder) == bool(False):
+        print(yellow + ' - There is no such account. Create? - ' + mc)
+        change = input('\n (y/n): ')
+        if change == 'y':
+            if os.path.exists(users_folder + user_input_name) == bool(False):  # Папка с юзером
+                os.mkdir(users_folder + user_input_name)
+            main_folder = users_folder + user_input_name + '/' + 'files/'  # Папка с юзерскими файлами
+            if os.path.exists(main_folder) == bool(False):
+                os.mkdir(main_folder)
+            password = ConfirmUserPass()
+            MainFun(password)
+        if change == 'n':
+            quit()
+    else:
+        MainFun(None)
+except ValueError:  # With this error (not entered value), the program is restarted
+    print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
+    sleep(2)
+    ClearTerminal()
+    RestartProgram()
