@@ -432,7 +432,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             main_file = 'pwManager.py'
             ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
             if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                ActionsUpdate('cp pwManager/' + main_file + ' .; rm -r pwManager/')
+                ActionsUpdate('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
                 ClearTerminal()
                 print(green + ' -- Update successfully! -- ' + mc)
                 sleep(1)
@@ -440,7 +440,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             else:
                 ClearTerminal()
                 print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
-                ActionsUpdate('rm -r pwManager/')
+                ActionsUpdate('rm -r pwManager/ -f')
                 sleep(.7)
                 ShowContent(key, master_password, lister_row)
         elif change_resource_or_actions == '-x':  # Условие выхода
