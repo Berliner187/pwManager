@@ -26,11 +26,11 @@ yellow, blue, green, mc, red = "\033[33m", "\033[36m", "\033[32m", "\033[0m", "\
 main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 
 # Files for work program
-file_date_base = "files/main_data.dat"     # Файл, в котором лежат пароли
-file_keys = "files/.keys.csv"  # Файл с ключами
-lister_file = "files/.lister.dat"   # Файл со строками в кол-ве 10000
-self_name_file = "files/.self_name.dat"  # Файл с именем (никнеймом)
-
+main_folder = 'files/'
+file_date_base = main_folder + "main_data.dat"     # Файл, в котором лежат пароли
+file_keys = main_folder + ".keys.csv"  # Файл с ключами
+lister_file = main_folder + ".lister.dat"   # Файл со строками в кол-ве 10000
+self_name_file = main_folder + ".self_name.dat"  # Файл с именем (никнеймом)
 
 check_file_date_base = os.path.exists(file_date_base)    # Проверка этого файла на наличие
 check_file_keys = os.path.exists(file_keys)     # Проверка на наличие
@@ -316,18 +316,17 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
                 password = GenerationPassword(length)
                 if length >= 8:
                     DoForNewGeneratedPassword(resource, login, password, key, lister, master_password)
+        sleep(3)
 
     elif change == 2:  # Save user password
         password = ConfirmUserPass()  # Input password
         SaveDataToFile(resource, login, password, key, lister, master_password)
-
         print(green + '\n  - Your password successfully saved! -  ' + mc)
         sleep(1)
     else:
         print(red + '  -- Error of change. Please, change again --  ' + mc)
         sleep(1)
         ChangeTypeOfPass(resource, login, key, master_password, lister)
-    sleep(1.3)
     ClearTerminal()
 
     if check_file_date_base == bool(False):     # Перезапуск для корректной работы дальше
@@ -420,90 +419,95 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
     if check_file_date_base == bool(True):
         # Decryption mechanism
         change_resource_or_actions = input('\n Change: ')
-        if change_resource_or_actions == '-a':  # Добавление нового ресурса
-            AddResourceData(resource, login, key, master_password, lister_row)
-        elif change_resource_or_actions == '-u':    # Обновление программы
-            def ActionsUpdate(command):
-                os.system(command)
-            ClearTerminal()
-            main_file = 'pwManager.py'
-            ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
-            if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                ActionsUpdate('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
+        try:
+            if change_resource_or_actions == '-a':  # Добавление нового ресурса
+                AddResourceData(resource, login, key, master_password, lister_row)
+            elif change_resource_or_actions == '-u':    # Обновление программы
+                def ActionsUpdate(command):
+                    os.system(command)
                 ClearTerminal()
-                print(green + ' -- Update successfully! -- ' + mc)
-                sleep(1)
-                ActionsUpdate('./' + main_file)
-            else:
+                main_file = 'pwManager.py'
+                ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
+                if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
+                    ActionsUpdate('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
+                    ClearTerminal()
+                    print(green + ' -- Update successfully! -- ' + mc)
+                    sleep(1)
+                    ActionsUpdate('./' + main_file)
+                else:
+                    ClearTerminal()
+                    print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
+                    ActionsUpdate('rm -r pwManager/ -f')
+                    sleep(.7)
+                    ShowContent(key, master_password, lister_row)
+            elif change_resource_or_actions == '-x':  # Условие выхода
+                ClearTerminal()  # Clearing terminal
+                print(blue, ' --- Program is closet --- \n', mc)
+                sys.exit()  # Exit
+            elif change_resource_or_actions == '-r':  # Условие перезапуска
+                ClearTerminal()  # Clearing terminal
+                print('\n', green, ' -- Restart -- ', mc)
+                sleep(.5)
                 ClearTerminal()
-                print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
-                ActionsUpdate('rm -r pwManager/ -f')
-                sleep(.7)
-                ShowContent(key, master_password, lister_row)
-        elif change_resource_or_actions == '-x':  # Условие выхода
-            ClearTerminal()  # Clearing terminal
-            print(blue, ' --- Program is closet --- \n', mc)
-            sys.exit()  # Exit
-        elif change_resource_or_actions == '-r':  # Условие перезапуска
-            ClearTerminal()  # Clearing terminal
-            print('\n', green, ' -- Restart -- ', mc)
-            sleep(.5)
-            ClearTerminal()
-            RestartProgram()  # Restart program
-        elif change_resource_or_actions == '-d':    # Удаление ресурса
-            print(blue + ' -- Change by number resource -- ' + mc)
-            change_res_by_num = int(input(yellow + '\n - Resource number: ' + mc))
-            # Выгрузка старого
-            with open(file_date_base, encoding='utf-8') as saved_resource:
-                reader = DictReader(saved_resource, delimiter=',')
-                mas_res, mas_log, mas_pas = [], [], []
-                cnt = 0
-                for row in reader:
-                    cnt += 1
-                    if cnt == change_res_by_num:
+                RestartProgram()  # Restart program
+            elif change_resource_or_actions == '-d':    # Удаление ресурса
+                print(blue + '\n -- Change by number resource -- ' + mc)
+                change_res_by_num = int(input(yellow + ' - Resource number: ' + mc))
+                # Выгрузка старого
+                with open(file_date_base, encoding='utf-8') as saved_resource:
+                    reader = DictReader(saved_resource, delimiter=',')
+                    mas_res, mas_log, mas_pas = [], [], []
+                    cnt = 0
+                    for row in reader:
                         cnt += 1
-                    else:
-                        mas_res.append(row["resource"])
-                        mas_log.append(row["login"])
-                        mas_pas.append(row["password"])
-                saved_resource.close()
-            # Перенос в новый файл
-            new_file_date_base = 'new_data.dat'
-            with open(new_file_date_base, mode="a", encoding='utf-8') as new_data:
-                writer = DictWriter(new_data, fieldnames=['resource', 'login', 'password'])
-                writer.writeheader()
-                for i in range(cnt - 2):
-                    writer.writerow({
-                        'resource': mas_res[i],
-                        'login': mas_log[i],
-                        'password': mas_pas[i]})
-                new_data.close()
-            copyfile(new_file_date_base, file_date_base)
-            os.system('rm ' + new_file_date_base)
-            print(green + '\n -- Successfully -- ' + mc)
-            sleep(1)
-            RestartProgram()
-        else:
-            with open(file_date_base, encoding='utf-8') as profiles:
-                reader = DictReader(profiles, delimiter=',')
-                count = 0   # Счетчик
-                for line in reader:  # Iterating over lines file
-                    count += 1
-                    if count == int(change_resource_or_actions):   # Выбор ресурса по номеру
-                        ClearTerminal()
-                        ShowContent(key, master_password, lister_row)
-                        encryption_resource = line["resource"]
-                        encryption_login = line["login"]
-                        encryption_password = line["password"]
-                        # Дешифровка ресурса
-                        decryption_res = DecryptionData(encryption_resource, key, master_password, lister_row)
-                        decryption_log = DecryptionData(encryption_login, key, master_password, lister_row)
-                        decryption_pas = DecryptionData(encryption_password, key, master_password, lister_row)
-                        # Вывод данных по ресурсу
-                        print('\n Resource:', green, decryption_res, mc,
-                              '\n Login:   ', green, decryption_log, mc,
-                              '\n Password:', green, decryption_pas, mc)
-
+                        if cnt == change_res_by_num:
+                            cnt += 1
+                        else:
+                            mas_res.append(row["resource"])
+                            mas_log.append(row["login"])
+                            mas_pas.append(row["password"])
+                    saved_resource.close()
+                # Перенос в новый файл
+                new_file_date_base = 'new_data.dat'
+                with open(new_file_date_base, mode="a", encoding='utf-8') as new_data:
+                    writer = DictWriter(new_data, fieldnames=['resource', 'login', 'password'])
+                    writer.writeheader()
+                    for i in range(cnt - 2):
+                        writer.writerow({
+                            'resource': mas_res[i],
+                            'login': mas_log[i],
+                            'password': mas_pas[i]})
+                    new_data.close()
+                copyfile(new_file_date_base, file_date_base)
+                os.system('rm ' + new_file_date_base)
+                print(green + '\n -- Successfully -- ' + mc)
+                sleep(.6)
+                ShowContent(key, master_password, lister_row)
+                DecryptionBlock(master_password, key, lister_row, resource, login)
+                # RestartProgram()
+            else:
+                with open(file_date_base, encoding='utf-8') as profiles:
+                    reader = DictReader(profiles, delimiter=',')
+                    count = 0   # Счетчик
+                    for line in reader:  # Iterating over lines file
+                        count += 1
+                        if count == int(change_resource_or_actions):   # Выбор ресурса по номеру
+                            ClearTerminal()
+                            ShowContent(key, master_password, lister_row)
+                            encryption_resource = line["resource"]
+                            encryption_login = line["login"]
+                            encryption_password = line["password"]
+                            # Дешифровка ресурса
+                            decryption_res = DecryptionData(encryption_resource, key, master_password, lister_row)
+                            decryption_log = DecryptionData(encryption_login, key, master_password, lister_row)
+                            decryption_pas = DecryptionData(encryption_password, key, master_password, lister_row)
+                            # Вывод данных по ресурсу
+                            print('\n Resource:', green, decryption_res, mc,
+                                  '\n Login:   ', green, decryption_log, mc,
+                                  '\n Password:', green, decryption_pas, mc)
+        except ValueError:
+            ShowContent(key, master_password, lister_row)
+            DecryptionBlock(master_password, key, lister_row, resource, login)
         DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
         AddResourceData(resource, login, key, master_password, lister_row)
