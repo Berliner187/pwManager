@@ -278,8 +278,8 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
 def ConfirmUserPass():
     """ Confirm user input password """
     def UserInput():
-        user_password = getpass(' Input: ')
-        user_confirm_password = getpass(' Confirm input: ')
+        user_password = getpass(' Password: ')
+        user_confirm_password = getpass(' Confirm password: ')
         return user_password, user_confirm_password
     print(blue + '\n Minimum password length 8 characters' + mc)
     password, confirm_password = UserInput()
@@ -432,11 +432,11 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             main_file = 'pwManager.py'
             ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
             if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                ActionsUpdate('cp pwManager/pwManager.py .; rm -r pwManager/')
+                ActionsUpdate('cp pwManager/' + main_file + ' .; rm -r pwManager/')
                 ClearTerminal()
                 print(green + ' -- Update successfully! -- ' + mc)
                 sleep(1)
-                ActionsUpdate('./pwManager.py')
+                ActionsUpdate('./' + main_file)
             else:
                 ClearTerminal()
                 print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
@@ -487,7 +487,10 @@ def MainFun():
         print(blue + "\n  - Encrypt your passwords with one master-password -    "
                      "\n  -           No resources saved. Add them!         -  \n" +
                      "\n ---                 That's easy!                  --- \n" + mc)
-        print(yellow + '\n -- Pick a master-password -- ' + mc)
+        print(yellow + '\n -- Pick a master-password -- '
+                       '\n - Только не используйте свой банковский пароль, '
+                        '\n  я не сильно вкладывался в безопасность '
+                        '\n  этого приложения ' + mc)
         master_password = ConfirmUserPass()
         if check_file_lister == bool(False):
             MakingRows(master_password)
