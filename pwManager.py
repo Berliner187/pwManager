@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Password manager v1.4.3 Stable For Linux (SFL)
-# by Berliner187
 # Resources and all data related to them are encrypted with a single password
+# by Berliner187
 import os, sys
 from csv import DictReader, DictWriter
 from base64 import urlsafe_b64encode, urlsafe_b64decode
@@ -14,7 +14,7 @@ from shutil import copyfile
 
 def ClearTerminal():
     """ Clear terminal """
-    os.system("clear")
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def RestartProgram():
@@ -37,8 +37,8 @@ check_file_keys = os.path.exists(file_keys)     # Проверка на нали
 check_file_lister = os.path.exists(lister_file)   # Проверка этого файла на наличие
 gty_for_listers = 1000     # Число строк в файле listers
 
-if os.path.exists('files') == bool(False):
-    os.mkdir('files')
+if os.path.exists(main_folder) == bool(False):
+    os.mkdir(main_folder)
 
 
 # Уровни шифрования
@@ -348,7 +348,6 @@ def ShowContent(key, master_password, lister):
             decryption_res = DecryptionData(encryption_resource, key, master_password, lister)
             s += 1
             print(str(s) + '. ' + decryption_res)    # Decryption resource
-
         print(blue + '\n  - Enter "-r" to restart, "-x" to exit'
                      '\n  - Enter "-a" to add new resource',
                      '\n  - Enter "-u" to update program',
@@ -422,22 +421,20 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
         try:
             if change_resource_or_actions == '-a':  # Добавление нового ресурса
                 AddResourceData(resource, login, key, master_password, lister_row)
-            elif change_resource_or_actions == '-u':    # Обновление программы
-                def ActionsUpdate(command):
-                    os.system(command)
+            elif change_resource_or_actions == '-u':    # Обновление программы из репозитория
                 ClearTerminal()
                 main_file = 'pwManager.py'
-                ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
+                os.system('git clone https://github.com/Berliner187/pwManager')
                 if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                    ActionsUpdate('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
+                    os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
                     ClearTerminal()
                     print(green + ' -- Update successfully! -- ' + mc)
                     sleep(1)
-                    ActionsUpdate('./' + main_file)
+                    os.system('./' + main_file)
                 else:
                     ClearTerminal()
                     print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
-                    ActionsUpdate('rm -r pwManager/ -f')
+                    os.system('rm -r pwManager/ -f')
                     sleep(.7)
                     ShowContent(key, master_password, lister_row)
             elif change_resource_or_actions == '-x':  # Условие выхода
@@ -460,9 +457,9 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                     cnt = 0
                     for row in reader:
                         cnt += 1
-                        if cnt == change_res_by_num:
+                        if cnt == change_res_by_num:    # Перескакивает выбранный юзером и не добавляется
                             cnt += 1
-                        else:
+                        else:   # Нужные ресурсы добавляются в массивы
                             mas_res.append(row["resource"])
                             mas_log.append(row["login"])
                             mas_pas.append(row["password"])
@@ -478,13 +475,10 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                             'login': mas_log[i],
                             'password': mas_pas[i]})
                     new_data.close()
-                copyfile(new_file_date_base, file_date_base)
-                os.system('rm ' + new_file_date_base)
-                print(green + '\n -- Successfully -- ' + mc)
-                sleep(.6)
+                copyfile(new_file_date_base, file_date_base)    # Старый записывается новым файлом
+                os.system('rm ' + new_file_date_base)   # Удаление нового файла
                 ShowContent(key, master_password, lister_row)
                 DecryptionBlock(master_password, key, lister_row, resource, login)
-                # RestartProgram()
             else:
                 with open(file_date_base, encoding='utf-8') as profiles:
                     reader = DictReader(profiles, delimiter=',')
@@ -520,7 +514,7 @@ def MainFun():
         print(blue + "\n  - Encrypt your passwords with one master-password -    "
                      "\n  -           No resources saved. Add them!         -  \n" +
                      "\n ---                 That's easy!                  --- \n" + mc)
-        print(yellow + '\n -- Pick a master-password -- '
+        print(yellow + '\n --          Pick a master-password --          '
                        '\n - Только не используйте свой банковский пароль,'
                        '\n      я не сильно вкладывался в безопасность    '
                        '\n              этой программы ' + mc)
@@ -546,10 +540,10 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n' 'Password Manager v1.4.3 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n Password Manager v1.4.3 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
-        print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
-        sleep(2)
+        print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
+        sleep(1)
         ClearTerminal()
         RestartProgram()

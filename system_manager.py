@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Password Manager Server Solution v1.0.1 Stable For Linux (SFL)
-# Based on stable version 1.4.2
+# Password Manager Server Solution v1.0.2 Stable For Linux (SFL)
+# Based on stable version 1.4.3
 # by Berliner187
 # Resources and all data related to them are encrypted with a single password
 import os, sys
@@ -10,6 +10,7 @@ import random
 import datetime
 from time import sleep
 from getpass import getpass
+from shutil import copyfile
 
 yellow, blue, green, mc, red = "\033[33m", "\033[36m", "\033[32m", "\033[0m", "\033[31m"  # Colours
 main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
@@ -54,7 +55,7 @@ ClearTerminal()
 # ClearTerminal()
 
 
-print(blue, '\n' ' Password Manager Server Solution v1.0.1 Stable For Linux (SFL) \n by Berliner187' '\n', mc)
+print(blue, '\n' ' Password Manager Server Solution v1.0.2 Stable For Linux (SFL) \n by Berliner187' '\n', mc)
 user_input_name = input(yellow + ' -- Enter your login: ' + mc)
 for syb in user_input_name:
     for check_register in lyster_of_large_register:
@@ -307,8 +308,8 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
 def ConfirmUserPass():
     """ Confirm user input password """
     def UserInput():
-        user_password = getpass(' Input: ')
-        user_confirm_password = getpass(' Confirm input: ')
+        user_password = getpass(' Password: ')
+        user_confirm_password = getpass(' Confirm password: ')
         return user_password, user_confirm_password
     print(blue + '\n Minimum password length 8 characters' + mc)
     password, confirm_password = UserInput()
@@ -371,11 +372,12 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
 
 def ShowContent(key, master_password, lister):
     """ Показ всех сохраненных ресурсов """
+    ClearTerminal()
     with open(file_date_base, encoding='utf-8') as data:
         s = 0
         reader = DictReader(data, delimiter=',')
         name = getUserSavedName(master_password)
-        print(yellow + '\n   --- ' + name + "'s Saved resources --- " + '\n'*3 + mc)
+        print(yellow + '\n   --- ' + name + "'s saved resources --- " + '\n'*3 + mc)
         for line in reader:
             encryption_resource = line["resource"]
             decryption_res = DecryptionData(encryption_resource, key, master_password, lister)
@@ -384,6 +386,7 @@ def ShowContent(key, master_password, lister):
         print(blue + '\n  - Enter "-x" to exit                ',
                      '\n  - Enter "-a" to add new resource    ',
                      '\n  - Enter "-u" to update the program from the repository',
+                     '\n  - Enter "-d" to remove resource'
                      '\n  - Enter "-q" to change another user ',
               yellow, '\n  Select resource by number', mc)
 
@@ -397,7 +400,6 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
     if check_file_date_base == bool(False):
         key, additional_key = GetKeys()
         lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
-        hash_master_password = EncryptionByTwoLevels(master_password, master_password)
         return key, lister_row, master_password
     else:
         master_password = getpass(' Your secure word: ')
@@ -438,7 +440,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             print(green + ' 1' + yellow + ' - Generation new password \n' +
                   green + ' 2' + yellow + ' - Save your password \n' + mc)
         TextAddNewResource()
-
         if check_file_date_base == bool(False):
             TextChangePassword()
             ChangeTypeOfPass(resource, login, key, master_password, lister_row)
@@ -472,6 +473,38 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                     ActionsUpdate('rm -r pwManager/')
                     sleep(.7)
                     ShowContent(key, master_password, lister_row)
+            elif change_resource_or_actions == '-d':    # Удаление ресурса
+                print(blue + '\n -- Change by number resource -- ' + mc)
+                change_res_by_num = int(input(yellow + ' - Resource number: ' + mc))
+                # Выгрузка старого
+                with open(file_date_base, encoding='utf-8') as saved_resource:
+                    reader = DictReader(saved_resource, delimiter=',')
+                    mas_res, mas_log, mas_pas = [], [], []
+                    cnt = 0
+                    for row in reader:
+                        cnt += 1
+                        if cnt == change_res_by_num:    # Перескакивает выбранный юзером и не добавляется
+                            cnt += 1
+                        else:   # Нужные ресурсы добавляются в массивы
+                            mas_res.append(row["resource"])
+                            mas_log.append(row["login"])
+                            mas_pas.append(row["password"])
+                    saved_resource.close()
+                # Перенос в новый файл
+                new_file_date_base = 'new_data.dat'
+                with open(new_file_date_base, mode="a", encoding='utf-8') as new_data:
+                    writer = DictWriter(new_data, fieldnames=['resource', 'login', 'password'])
+                    writer.writeheader()
+                    for i in range(cnt - 2):
+                        writer.writerow({
+                            'resource': mas_res[i],
+                            'login': mas_log[i],
+                            'password': mas_pas[i]})
+                    new_data.close()
+                copyfile(new_file_date_base, file_date_base)    # Старый записывается новым файлом
+                os.system('rm ' + new_file_date_base)   # Удаление нового файла
+                ShowContent(key, master_password, lister_row)
+                DecryptionBlock(master_password, key, lister_row, resource, login)
             elif change_resource_or_actions == '-x':  # Условие выхода
                 ClearTerminal()  # Clearing terminal
                 print(blue, ' --- Program is closet --- \n', mc)
@@ -515,9 +548,11 @@ def MainFun(master_password):
         ClearTerminal()     # Очистка терминала
         print(blue + "\n  - Encrypt your passwords with one master-password -    "
                      "\n  -           No resources saved. Add them!         -  \n",
-                     "\n ---                 That's easy!                  --- \n",
-                     "\n\n --          Pick a master-password          --        ", mc)
-
+                     "\n ---                 That's easy!                  --- \n", mc)
+        print(yellow + '\n --          Pick a master-password --          '
+                       '\n - Только не используйте свой банковский пароль,'
+                       '\n      я не сильно вкладывался в безопасность    '
+                       '\n              этой программы ' + mc)
         if os.path.exists(main_folder) == bool(False):
             os.mkdir(main_folder)
         if check_file_lister == bool(False):
@@ -552,11 +587,12 @@ try:  # Running a program through an exception
             password = ConfirmUserPass()
             MainFun(password)
         if change == 'n':
-            quit()
+            ClearTerminal()
+            RestartProgram()
     else:
         MainFun(None)
 except ValueError:  # With this error (not entered value), the program is restarted
-    print(red, '\n' + ' --- ValueError, program is restarted --- ', mc)
-    sleep(2)
+    print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
+    sleep(1)
     ClearTerminal()
     RestartProgram()
