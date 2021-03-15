@@ -14,6 +14,7 @@ from shutil import copyfile
 
 yellow, blue, green, mc, red = "\033[33m", "\033[36m", "\033[32m", "\033[0m", "\033[31m"  # Colours
 main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
+# Символы, которые не могут использоваться
 lyster_of_large_register = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=!@#$%^&*()"№;:?'
 
 
@@ -28,33 +29,6 @@ def RestartProgram():
 
 
 ClearTerminal()
-
-# from asciimatics.effects import Cycle, Stars
-# from asciimatics.renderers import FigletText
-# from asciimatics.scene import Scene
-# from asciimatics.screen import Screen
-#
-# cnt = 5
-# for i in range(cnt):
-#     def demo(screen):
-#         effects = [
-#             Cycle(
-#                 screen,
-#                 FigletText("Password", font='big'),
-#                 int(screen.height / 2 - 8)),
-#             Cycle(
-#                 screen,
-#                 FigletText("Manager", font='big'),
-#                 int(screen.height / 2 + 3)),
-#             Stars(screen, 200)
-#         ]
-#         screen.play([Scene(effects, 20)])
-#
-#
-#     Screen.wrapper(demo)
-# ClearTerminal()
-
-
 print(blue, '\n' ' Password Manager Server Solution v1.0.2 Stable For Linux (SFL) \n by Berliner187' '\n', mc)
 user_input_name = input(yellow + ' -- Enter your login: ' + mc)
 for syb in user_input_name:
