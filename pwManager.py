@@ -426,11 +426,17 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 main_file = 'pwManager.py'
                 os.system('git clone https://github.com/Berliner187/pwManager')
                 if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                    os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
-                    ClearTerminal()
-                    print(green + ' -- Update successfully! -- ' + mc)
-                    sleep(1)
-                    os.system('./' + main_file)
+                    change = input(yellow + ' - Update? (y/n): ' + mc)
+                    if change == 'y':
+                        os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
+                        ClearTerminal()
+                        print(green + ' -- Update successfully! -- ' + mc)
+                        sleep(1)
+                        os.system('./' + main_file)
+                    else:
+                        os.system('rm -r pwManager/ -f')
+                        ShowContent(key, master_password, lister_row)
+                        DecryptionBlock(master_password, key, lister_row, resource, login)
                 else:
                     ClearTerminal()
                     print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
