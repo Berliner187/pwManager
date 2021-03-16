@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.3 Stable For Linux (SFL)
+# Password manager v1.4.4 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -31,6 +31,7 @@ file_date_base = main_folder + "main_data.dat"     # Файл, в котором
 file_keys = main_folder + ".keys.csv"  # Файл с ключами
 lister_file = main_folder + ".lister.dat"   # Файл со строками в кол-ве 10000
 self_name_file = main_folder + ".self_name.dat"  # Файл с именем (никнеймом)
+hash_password_file = main_folder + '.hash_password.dat'
 
 check_file_date_base = os.path.exists(file_date_base)    # Проверка этого файла на наличие
 check_file_keys = os.path.exists(file_keys)     # Проверка на наличие
@@ -350,9 +351,9 @@ def ShowContent(key, master_password, lister):
             print(str(s) + '. ' + decryption_res)    # Decryption resource
         print(blue + '\n  - Enter "-r" to restart, "-x" to exit'
                      '\n  - Enter "-a" to add new resource',
-                     '\n  - Enter "-u" to update program',
-                     '\n  - Enter "-d" to remove resource',
-                     yellow, '\n Select resource by number', mc)
+              '\n  - Enter "-d" to remove resource',
+              '\n  - Enter "-u" to update program',
+              yellow, '\n Select resource by number', mc)
 
 
 def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
@@ -362,13 +363,25 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
         return int(key), int(additional_key)
 
     if check_file_date_base == bool(False):
-        print(blue + ' Enter secure word and remember them' + mc)
         key, additional_key = GetKeys()
         lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
         return key, lister_row, master_password
     else:
-        if status == bool(True):
-            master_password = getpass(' Your secure word: ')
+        if status == bool(True):    # Если аргумент status истинен, то идет запрос пароля
+            master_password = getpass(yellow + ' -- Your secure word: ' + mc)
+            # Проверка хэша пароля
+            enc_pas = EncryptionByTwoLevels(master_password, master_password)
+            master_password_from_file = open(hash_password_file)
+            enc_pas_from_file = ''
+            for hash_pas in master_password_from_file.readlines():
+                enc_pas_from_file = hash_pas
+            if enc_pas == enc_pas_from_file:
+                pass
+            else:
+                print(red + '\n --- Wrong password --- ' + mc)
+                sleep(1.4)
+                ClearTerminal()
+                MainFun()
         try:
             if master_password == '-x':  # Condition exit
                 ClearTerminal()  # Clearing terminal
@@ -520,6 +533,10 @@ def MainFun():
                        '\n      я не сильно вкладывался в безопасность    '
                        '\n              этой программы ' + mc)
         master_password = ConfirmUserPass()
+        hash_pas = open(hash_password_file, 'w')
+        enc_pas = EncryptionByTwoLevels(master_password, master_password)
+        hash_pas.write(enc_pas)
+        hash_pas.close()
         if check_file_lister == bool(False):
             MakingRows(master_password)
         print(GreatingDependingOnDateTime(master_password))
@@ -541,7 +558,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n Password Manager v1.4.3 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n Password Manager v1.4.4 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
