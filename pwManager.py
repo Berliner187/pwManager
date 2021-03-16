@@ -355,7 +355,7 @@ def ShowContent(key, master_password, lister):
                      yellow, '\n Select resource by number', mc)
 
 
-def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
+def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
     """ Get secure_word, unique-keys """
     def GetKeys():
         key, additional_key = getUniqueSewnKey(master_password)  # Получение новых ключей
@@ -367,7 +367,8 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
         lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
         return key, lister_row, master_password
     else:
-        master_password = getpass(' Your secure word: ')
+        if status == bool(True):
+            master_password = getpass(' Your secure word: ')
         try:
             if master_password == '-x':  # Condition exit
                 ClearTerminal()  # Clearing terminal
@@ -394,7 +395,7 @@ def DataForResource(master_password):
         TextAddNewResource()
     resource = input(yellow + ' Resource: ' + mc)
     login = input(yellow + ' Login: ' + mc)
-    key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(master_password)
+    key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(master_password, False)
     return key, lister_row, resource, login
 
 
@@ -426,17 +427,11 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 main_file = 'pwManager.py'
                 os.system('git clone https://github.com/Berliner187/pwManager')
                 if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                    change = input(yellow + ' - Update? (y/n): ' + mc)
-                    if change == 'y':
-                        os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
-                        ClearTerminal()
-                        print(green + ' -- Update successfully! -- ' + mc)
-                        sleep(1)
-                        os.system('./' + main_file)
-                    else:
-                        os.system('rm -r pwManager/ -f')
-                        ShowContent(key, master_password, lister_row)
-                        DecryptionBlock(master_password, key, lister_row, resource, login)
+                    os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
+                    ClearTerminal()
+                    print(green + ' -- Update successfully! -- ' + mc)
+                    sleep(1)
+                    os.system('./' + main_file)
                 else:
                     ClearTerminal()
                     print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
@@ -535,7 +530,7 @@ def MainFun():
     # Reader
     else:
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
-        key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None)
+        key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None, True)
         ClearTerminal()
         print(GreatingDependingOnDateTime(master_password))
         sleep(.7)
