@@ -382,15 +382,6 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
                 sleep(1.4)
                 ClearTerminal()
                 MainFun()
-        try:
-            if master_password == '-x':  # Condition exit
-                ClearTerminal()  # Clearing terminal
-                print(blue, ' --- Program is closet --- \n', mc)
-                sys.exit()  # Exit
-        except ZeroDivisionError:
-            print(red + '- Incorrect input -' + mc)
-            sleep(1)
-            MainFun()
         key, additional_key = GetKeys()
         lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
         return key, lister_row, master_password
@@ -440,11 +431,17 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 main_file = 'pwManager.py'
                 os.system('git clone https://github.com/Berliner187/pwManager')
                 if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                    os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
-                    ClearTerminal()
-                    print(green + ' -- Update successfully! -- ' + mc)
-                    sleep(1)
-                    os.system('./' + main_file)
+                    change = input(yellow + ' - Install? (y/n)' + mc)
+                    if change == 'y':
+                        os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
+                        ClearTerminal()
+                        print(green + ' -- Update successfully! -- ' + mc)
+                        sleep(1)
+                        os.system('./' + main_file)
+                    else:
+                        os.system('rm -r pwManager/ -f')
+                        ShowContent(key, master_password, lister_row)
+                        DecryptionBlock(master_password, key, lister_row, resource, login)
                 else:
                     ClearTerminal()
                     print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
@@ -526,12 +523,12 @@ def MainFun():
     """ The main function responsible for the operation of the program """
     if check_file_date_base == bool(False):   # Если файла нет, идет создание файла с ресурсами
         print(blue + "\n  - Encrypt your passwords with one master-password -    "
-                     "\n  -           No resources saved. Add them!         -  \n" +
-                     "\n ---                 That's easy!                  --- \n" + mc)
-        print(yellow + '\n --          Pick a master-password --          '
-                       '\n - Только не используйте свой банковский пароль,'
-                       '\n      я не сильно вкладывался в безопасность    '
-                       '\n              этой программы ' + mc)
+                     "\n  -           No resources saved. Add them!         -  \n"
+                     "\n ----                That's easy!                 ---- \n"
+                     '\n --          Создание мастер-пароля                   -- '
+                     '\n --    Только не используйте свой банковский пароль,  -- '
+                     '\n          я не сильно вкладывался в безопасность         '
+                     '\n                     этой программы                      ' + mc)
         master_password = ConfirmUserPass()
         hash_pas = open(hash_password_file, 'w')
         enc_pas = EncryptionByTwoLevels(master_password, master_password)

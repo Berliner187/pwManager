@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Password Manager Server Solution v1.0.2 Stable For Linux (SFL)
-# Based on stable version 1.4.3
+# Based on stable version 1.4.4
 # by Berliner187
 # Resources and all data related to them are encrypted with a single password
 import os, sys
@@ -15,7 +15,7 @@ from shutil import copyfile
 yellow, blue, green, mc, red = "\033[33m", "\033[36m", "\033[32m", "\033[0m", "\033[31m"  # Colours
 main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 # Символы, которые не могут использоваться
-lyster_of_large_register = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=!@#$%^&*()"№;:?'
+forbidden_symbols = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=!@#$%^&*()"№;:?'
 
 
 def ClearTerminal():
@@ -29,13 +29,13 @@ def RestartProgram():
 
 
 ClearTerminal()
-print(blue, '\n' ' Password Manager Server Solution v1.0.2 Stable For Linux (SFL) \n by Berliner187' '\n', mc)
+print(blue, '\n' ' Password Manager Server Solution v1.0.3 Stable For Linux (SFL) \n by Berliner187' '\n', mc)
 user_input_name = input(yellow + ' -- Enter your login: ' + mc)
 for syb in user_input_name:
-    for check_register in lyster_of_large_register:
+    for check_register in forbidden_symbols:
         if syb == check_register:
             ClearTerminal()
-            print(red + '\n\n\n -- Unacceptable symbols in login -- ' + red)
+            print(red + '\n\n\n   -- Unacceptable symbols in login -- ' + red)
             sleep(1)
             RestartProgram()
 # Files for work program
@@ -43,6 +43,7 @@ users_folder = 'users/'
 if os.path.exists(users_folder) == bool(False):     # Папка с юзерами
     os.mkdir(users_folder)
 main_folder = users_folder + user_input_name + '/' + 'files/'   # Папка с юзерскими файлами
+hash_password_file = main_folder + ".hash_password.dat"
 file_date_base = main_folder + "main_data.dat"     # Файл, в котором лежат основные данные
 file_keys = main_folder + ".keys.csv"  # Файл с ключами
 lister_file = main_folder + ".lister.dat"   # Файл со строками в кол-ве 10000
@@ -365,7 +366,7 @@ def ShowContent(key, master_password, lister):
               yellow, '\n  Select resource by number', mc)
 
 
-def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
+def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
     """ Get secure_word, unique-keys """
     def GetKeys():
         key, additional_key = getUniqueSewnKey(master_password)  # Получение новых ключей
@@ -376,16 +377,21 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password):
         lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
         return key, lister_row, master_password
     else:
-        master_password = getpass(' Your secure word: ')
-        try:
-            if master_password == '-x':  # Condition exit
-                ClearTerminal()  # Clearing terminal
-                print(blue, ' --- Program is closet --- \n', mc)
-                sys.exit()  # Exit
-        except ZeroDivisionError:
-            print(red + '- Incorrect input -' + mc)
-            sleep(1)
-            AuthConfirmPasswordAndGetUniqueSewnKey(None)
+        if status == bool(True):
+            master_password = getpass(yellow + ' - Your secure word: ' + mc)
+            # Проверка хэша пароля
+            enc_pas = EncryptionByTwoLevels(master_password, master_password)
+            master_password_from_file = open(hash_password_file)
+            enc_pas_from_file = ''
+            for hash_pas in master_password_from_file.readlines():
+                enc_pas_from_file = hash_pas
+            if enc_pas == enc_pas_from_file:
+                pass
+            else:
+                print(red + '\n --- Wrong password --- ' + mc)
+                sleep(1.4)
+                ClearTerminal()
+                MainFun(None)
         key, additional_key = GetKeys()
         lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
         return key, lister_row, master_password
@@ -403,7 +409,7 @@ def DataForResource(master_password):
         TextAddNewResource()
     resource = input(yellow + ' Resource: ' + mc)
     login = input(yellow + ' Login: ' + mc)
-    key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(master_password)
+    key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(master_password, False)
     return key, lister_row, resource, login
 
 
@@ -539,7 +545,7 @@ def MainFun(master_password):
     # Reader
     else:
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
-        key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None)
+        key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None, True)
         ClearTerminal()
         print(GreatingDependingOnDateTime(master_password))
         sleep(.7)
@@ -558,8 +564,12 @@ try:  # Running a program through an exception
             main_folder = users_folder + user_input_name + '/' + 'files/'  # Папка с юзерскими файлами
             if os.path.exists(main_folder) == bool(False):
                 os.mkdir(main_folder)
-            password = ConfirmUserPass()
-            MainFun(password)
+            master_password = ConfirmUserPass()
+            hash_pas = open(hash_password_file, 'w')
+            enc_pas = EncryptionByTwoLevels(master_password, master_password)
+            hash_pas.write(enc_pas)
+            hash_pas.close()
+            MainFun(master_password)
         if change == 'n':
             ClearTerminal()
             RestartProgram()
