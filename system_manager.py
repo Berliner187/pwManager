@@ -436,22 +436,25 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             if change_resource_or_actions == '-a':  # Добавление нового ресурса
                 AddResourceData(resource, login, key, master_password, lister_row)
             elif change_resource_or_actions == '-u':    # Обновление программы
-                def ActionsUpdate(command):
-                    os.system(command)
                 ClearTerminal()
                 main_file = 'system_manager.py'
                 delite_after_update = 'rm -r pwManager/ -f'
-                ActionsUpdate('git clone https://github.com/Berliner187/pwManager')
+                os.system('git clone https://github.com/Berliner187/pwManager')
                 if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                    ActionsUpdate('cp pwManager/' + main_file + ' .; ' + delite_after_update)
-                    ClearTerminal()
-                    print(green + ' -- Update successfully! -- ' + mc)
-                    sleep(1)
-                    ActionsUpdate('./' + main_file)
+                    change = input(yellow + ' - Update? (y/n): ' + mc)
+                    if change == 'y':
+                        os.system('cp pwManager/' + main_file + ' .; ' + delite_after_update)
+                        ClearTerminal()
+                        print(green + ' -- Update successfully! -- ' + mc)
+                        sleep(1)
+                        os.system('./' + main_file)
+                    else:
+                        os.system(delite_after_update)
+                        ShowContent(key, master_password, lister_row)
                 else:
                     ClearTerminal()
                     print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
-                    ActionsUpdate(delite_after_update)
+                    os.system(delite_after_update)
                     sleep(.7)
                     ShowContent(key, master_password, lister_row)
             elif change_resource_or_actions == '-d':    # Удаление ресурса
