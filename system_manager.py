@@ -31,6 +31,10 @@ def RestartProgram():
 ClearTerminal()
 print(blue, '\n' ' Password Manager Server Solution v1.0.3 Stable For Linux (SFL) \n by Berliner187' '\n', mc)
 user_input_name = input(yellow + ' -- Enter your login: ' + mc)
+if len(user_input_name) < 5:
+    print(red + ' - Your login too short, try again ' + mc)
+    sleep(.7)
+    RestartProgram()
 for syb in user_input_name:
     for check_register in forbidden_symbols:
         if syb == check_register:
