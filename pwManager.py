@@ -429,23 +429,24 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             elif change_resource_or_actions == '-u':    # Обновление программы из репозитория
                 ClearTerminal()
                 main_file = 'pwManager.py'
+                delite_folder_after_update = 'rm -r pwManager/ -f'
                 os.system('git clone https://github.com/Berliner187/pwManager')
                 if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
                     change = input(yellow + ' - Install? (y/n)' + mc)
                     if change == 'y':
-                        os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
+                        os.system('cp pwManager/' + main_file + ' .; ' + delite_folder_after_update)
                         ClearTerminal()
                         print(green + ' -- Update successfully! -- ' + mc)
                         sleep(1)
                         os.system('./' + main_file)
                     else:
-                        os.system('rm -r pwManager/ -f')
+                        os.system(delite_folder_after_update)
                         ShowContent(key, master_password, lister_row)
                         DecryptionBlock(master_password, key, lister_row, resource, login)
                 else:
                     ClearTerminal()
                     print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
-                    os.system('rm -r pwManager/ -f')
+                    os.system(delite_folder_after_update)
                     sleep(.7)
                     ShowContent(key, master_password, lister_row)
             elif change_resource_or_actions == '-x':  # Условие выхода
@@ -525,14 +526,14 @@ def MainFun():
         print(blue + "\n  - Encrypt your passwords with one master-password -    "
                      "\n  -           No resources saved. Add them!         -  \n"
                      "\n ----                That's easy!                 ---- \n"
-                     '\n --          Создание мастер-пароля                   -- '
+                     '\n --             Создание мастер-пароля                -- '
                      '\n --    Только не используйте свой банковский пароль,  -- '
                      '\n          я не сильно вкладывался в безопасность         '
-                     '\n                     этой программы                      ' + mc)
+                     '\n                    этой программы                       ' + mc)
         master_password = ConfirmUserPass()
-        hash_pas = open(hash_password_file, 'w')
+        hash_pas = open(hash_password_file, 'w')    # Файл с хэшем
         enc_pas = EncryptionByTwoLevels(master_password, master_password)
-        hash_pas.write(enc_pas)
+        hash_pas.write(enc_pas)     # Сохранение хэша
         hash_pas.close()
         if check_file_lister == bool(False):
             MakingRows(master_password)
