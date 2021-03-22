@@ -680,8 +680,8 @@ if __name__ == '__main__':
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
         sleep(1)
         ClearTerminal()
-        print(yellow + ' -- You can try to update the program -- ' + mc)
-        change = input(yellow + ' - Update? (y/n): ')
+        print(red + ' -- You can try to update the program -- ' + mc)
+        change = input(yellow + ' - Update? (y/n): ' + mc)
         if change == 'y':
             UpdateProgram(None, None, None, None, None, False)
         RestartProgram()
