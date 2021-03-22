@@ -406,12 +406,12 @@ def DataForResource(master_password):
     return key, lister_row, resource, login
 
 
-def UpdateProgram(master_password, key, lister_row, resource, login):
+def UpdateProgram(master_password, key, lister_row, resource, login, status):
     main_file = 'pwManager.py'
     os.system('git clone https://github.com/Berliner187/pwManager')
     if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-        change = input(yellow + ' - Install? (y/n): ' + mc)
-        if change == 'y':
+        install_or_no = input(yellow + ' - Install? (y/n): ' + mc)
+        if install_or_no == 'y':
             os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
             ClearTerminal()
             print(green + ' -- Update successfully! -- ' + mc)
@@ -419,8 +419,9 @@ def UpdateProgram(master_password, key, lister_row, resource, login):
             os.system('./' + main_file)
         else:
             os.system('rm -r pwManager/ -f')
-            ShowContent(key, master_password, lister_row)
-            DecryptionBlock(master_password, key, lister_row, resource, login)
+            if status == bool(True):   # Если статус требует True
+                ShowContent(key, master_password, lister_row)
+                DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
         ClearTerminal()
         print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
@@ -435,7 +436,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             print(green + ' 1' + yellow + ' - Generation new password \n' +
                   green + ' 2' + yellow + ' - Save your password \n' + mc)
         TextAddNewResource()
-
         if check_file_date_base == bool(False):
             TextChangePassword()
             ChangeTypeOfPass(resource, login, key, master_password, lister_row)
@@ -453,7 +453,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 AddResourceData(resource, login, key, master_password, lister_row)
             elif change_resource_or_actions == '-u':    # Обновление программы из репозитория
                 ClearTerminal()
-                UpdateProgram(master_password, key, lister_row, resource, login)
+                UpdateProgram(master_password, key, lister_row, resource, login, True)
                 ShowContent(key, master_password, lister_row)
             elif change_resource_or_actions == '-x':  # Условие выхода
                 ClearTerminal()  # Clearing terminal
@@ -683,5 +683,5 @@ if __name__ == '__main__':
         print(yellow + ' -- You can try to update the program -- ' + mc)
         change = input(yellow + ' - Update? (y/n): ')
         if change == 'y':
-            UpdateProgram(None, None, None, None, None)
+            UpdateProgram(None, None, None, None, None, False)
         RestartProgram()
