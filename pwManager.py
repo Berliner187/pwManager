@@ -352,7 +352,7 @@ def ShowContent(key, master_password, lister):
             s += 1
             print(str(s) + '. ' + decryption_res)    # Decryption resource
         print(blue + '\n  - Enter "-r" to restart, "-x" to exit'
-                     '\n  - Enter "-a" to add new resource',
+                     '\n  - Enter "-a" to add new resource'
               '\n  - Enter "-d" to remove resource',
               '\n  - Enter "-u" to update program',
               '\n  - Enter "-n" to go to notes' + red, 'NEW!',
@@ -370,7 +370,7 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
         return key, lister_row, master_password
     else:
         if status == bool(True):    # Если аргумент status истинен, то идет запрос пароля
-            master_password = getpass(yellow + ' -- Your secure word: ' + mc)
+            master_password = getpass(yellow + ' -- Your master-password: ' + mc)
             # Проверка хэша пароля
             enc_pas = EncryptionByTwoLevels(master_password, master_password)
             master_password_from_file = open(file_hash_password)
@@ -638,10 +638,10 @@ def MainFun():
                      '\n --    Только не используйте свой банковский пароль,  -- '
                      '\n          я не сильно вкладывался в безопасность         '
                      '\n                     этой программы                      ' + mc)
-        master_password = ConfirmUserPass()
-        hash_pas = open(file_hash_password, 'w')
-        enc_pas = EncryptionByTwoLevels(master_password, master_password)
-        hash_pas.write(enc_pas)
+        master_password = ConfirmUserPass()     # Создание мастер-пароля
+        hash_pas = open(file_hash_password, 'w')    # Открытие файла с хэшем
+        enc_pas = EncryptionByTwoLevels(master_password, master_password)   # Шифрование мастер-пароля
+        hash_pas.write(enc_pas)     #
         hash_pas.close()
         if check_file_lister == bool(False):
             MakingRows(master_password, main_symbols)
@@ -650,7 +650,6 @@ def MainFun():
         # Данные для сохранения
         key, lister_row, resource, login = DataForResource(master_password)     # Ввод данных для ресурса
         DecryptionBlock(master_password, key, lister_row, resource, login)  # Start cycle
-    # Reader
     else:
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
         key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None, True)
