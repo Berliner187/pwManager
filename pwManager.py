@@ -416,7 +416,8 @@ def UpdateProgram(master_password, key, lister_row, resource, login, status):
             ClearTerminal()
             print(green + ' -- Update successfully! -- ' + mc)
             sleep(.6)
-            os.system('./' + main_file)
+            if status == bool(True):
+                RestartProgram()
         else:
             os.system('rm -r pwManager/ -f')
             if status == bool(True):   # Если статус требует True
