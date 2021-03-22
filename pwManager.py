@@ -406,6 +406,28 @@ def DataForResource(master_password):
     return key, lister_row, resource, login
 
 
+def UpdateProgram(master_password, key, lister_row, resource, login):
+    main_file = 'pwManager.py'
+    os.system('git clone https://github.com/Berliner187/pwManager')
+    if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
+        change = input(yellow + ' - Install? (y/n): ' + mc)
+        if change == 'y':
+            os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
+            ClearTerminal()
+            print(green + ' -- Update successfully! -- ' + mc)
+            sleep(.6)
+            os.system('./' + main_file)
+        else:
+            os.system('rm -r pwManager/ -f')
+            ShowContent(key, master_password, lister_row)
+            DecryptionBlock(master_password, key, lister_row, resource, login)
+    else:
+        ClearTerminal()
+        print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
+        os.system('rm -r pwManager/ -f')
+        sleep(.7)
+
+
 def DecryptionBlock(master_password, key, lister_row, resource, login):
     """ Show resources and decrypt them with keys """
     def AddResourceData(resource, login, key, master_password, lister_row):
@@ -431,26 +453,8 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 AddResourceData(resource, login, key, master_password, lister_row)
             elif change_resource_or_actions == '-u':    # Обновление программы из репозитория
                 ClearTerminal()
-                main_file = 'pwManager.py'
-                os.system('git clone https://github.com/Berliner187/pwManager')
-                if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-                    change = input(yellow + ' - Install? (y/n)' + mc)
-                    if change == 'y':
-                        os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
-                        ClearTerminal()
-                        print(green + ' -- Update successfully! -- ' + mc)
-                        sleep(1)
-                        os.system('./' + main_file)
-                    else:
-                        os.system('rm -r pwManager/ -f')
-                        ShowContent(key, master_password, lister_row)
-                        DecryptionBlock(master_password, key, lister_row, resource, login)
-                else:
-                    ClearTerminal()
-                    print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
-                    os.system('rm -r pwManager/ -f')
-                    sleep(.7)
-                    ShowContent(key, master_password, lister_row)
+                UpdateProgram(master_password, key, lister_row, resource, login)
+                ShowContent(key, master_password, lister_row)
             elif change_resource_or_actions == '-x':  # Условие выхода
                 ClearTerminal()  # Clearing terminal
                 print(blue, ' --- Program is closet --- \n', mc)
@@ -491,11 +495,10 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                     new_data.close()
                 copyfile(new_file_date_base, file_date_base)    # Старый записывается новым файлом
                 os.system('rm ' + new_file_date_base)   # Удаление нового файла
-                ShowContent(key, master_password, lister_row)
-                DecryptionBlock(master_password, key, lister_row, resource, login)
-            elif change_resource_or_actions == '-n':    # Добавление заметок
+                ShowContent(key, master_password, lister_row)   # Вывод ресурсов
+            elif change_resource_or_actions == '-n':    # Добавление зашифрованных заметок
                 ClearTerminal()
-                while True:
+                while True:     # Старт цикла для работы с заметками
                     if check_file_notes == bool(True):  # Если файл с заметками уже есть
                         def show():     # Показ сохраненных заметок
                             with open(file_notes, encoding='utf-8') as notes:
@@ -506,14 +509,14 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                     number_note += 1
                                     dec_name_note = DecryptionData(name["name_note"], key,
                                                                    master_password, lister_row)
-                                    print(number_note, dec_name_note)
+                                    print(number_note, dec_name_note)   # Вывод названий заметок и их порядкового номера
                                 print(blue + '\n  - Press "Enter" to go back'
                                              '\n  - Enter "-a" to add new note'
                                              '\n  - Enter "-d" to remove note',
                                       yellow, '\n Select note by number', mc)
                         show()
 
-                    def add_new():
+                    def add_new():  # Добавление новой заметки
                         ClearTerminal()
                         print(blue + '    ---  Add new note  --- \n\n')
                         os.system('touch ' + main_folder + 'notes.csv')
@@ -542,7 +545,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                         RestartProgram()
                     else:
 
-                        def work():
+                        def work():     # Работа в лейбле с заметками
                             mas_name_note, mas_note = [], []
                             with open(file_notes, encoding='utf-8') as notes:
                                 reader_of_note = DictReader(notes, delimiter=',')
@@ -650,15 +653,14 @@ def MainFun():
         master_password = ConfirmUserPass()     # Создание мастер-пароля
         hash_pas = open(file_hash_password, 'w')    # Открытие файла с хэшем
         enc_pas = EncryptionByTwoLevels(master_password, master_password)   # Шифрование мастер-пароля
-        hash_pas.write(enc_pas)     #
-        hash_pas.close()
-        if check_file_lister == bool(False):
+        hash_pas.write(enc_pas)     # Хэш записывается в файл
+        hash_pas.close()    # Закрытие файла
+        if check_file_lister == bool(False):    # Если файла со строкасм нет, то они генерируются
             MakingRows(master_password, main_symbols)
-        print(GreatingDependingOnDateTime(master_password))
+        print(GreatingDependingOnDateTime(master_password))     # Вывод приветствия
         sleep(.7)
-        # Данные для сохранения
         key, lister_row, resource, login = DataForResource(master_password)     # Ввод данных для ресурса
-        DecryptionBlock(master_password, key, lister_row, resource, login)  # Start cycle
+        DecryptionBlock(master_password, key, lister_row, resource, login)  # Старт цикла
     else:
         # Если файл уже создан, выводтся содержимое и дальнейшее взаимодействие с программой происходит тут
         key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None, True)
@@ -666,7 +668,7 @@ def MainFun():
         print(GreatingDependingOnDateTime(master_password))
         sleep(.7)
         ShowContent(key, master_password, lister_row)       # Показ содержимого файла с ресурсами
-        DecryptionBlock(master_password, key, lister_row, None, None)  # Start cycle
+        DecryptionBlock(master_password, key, lister_row, None, None)  # Старт цикла
 
 
 if __name__ == '__main__':
@@ -678,4 +680,8 @@ if __name__ == '__main__':
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
         sleep(1)
         ClearTerminal()
+        print(yellow + ' -- You can try to update the program -- ' + mc)
+        change = input(yellow + ' - Update? (y/n): ')
+        if change == 'y':
+            UpdateProgram(None, None, None, None, None)
         RestartProgram()
