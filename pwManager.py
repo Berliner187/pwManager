@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.4 Stable For Linux (SFL)
+# Password manager v1.4.5 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -22,20 +22,23 @@ def RestartProgram():
     os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
-yellow, blue, green, mc, red = "\033[33m", "\033[36m", "\033[32m", "\033[0m", "\033[31m"  # Colours
-main_lyster = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
+yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m" # Colours
+symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
+main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
 # Files for work program
 main_folder = 'files/'
 file_date_base = main_folder + "main_data.dat"     # Файл, в котором лежат пароли
 file_keys = main_folder + ".keys.csv"  # Файл с ключами
-lister_file = main_folder + ".lister.dat"   # Файл со строками в кол-ве 10000
-self_name_file = main_folder + ".self_name.dat"  # Файл с именем (никнеймом)
-hash_password_file = main_folder + '.hash_password.dat'
+file_lister = main_folder + ".lister.dat"   # Файл со строками в кол-ве 10000
+file_self_name = main_folder + ".self_name.dat"  # Файл с именем (никнеймом)
+file_hash_password = main_folder + '.hash_password.dat'     # Файл с хэшем пароля
+file_notes = main_folder + 'notes.csv'   # Файл с заметками
 
 check_file_date_base = os.path.exists(file_date_base)    # Проверка этого файла на наличие
 check_file_keys = os.path.exists(file_keys)     # Проверка на наличие
-check_file_lister = os.path.exists(lister_file)   # Проверка этого файла на наличие
+check_file_lister = os.path.exists(file_lister)   # Проверка этого файла на наличие
+check_file_notes = os.path.exists(file_notes)
 gty_for_listers = 1000     # Число строк в файле listers
 
 if os.path.exists(main_folder) == bool(False):
@@ -127,18 +130,18 @@ def DecryptionByTwoLevels(anything, master_password):   # Decryption by two leve
 
 def EncryptionData(data, key, master_password, lister):
     """ Decryption encryption resource """
-    encryption_data = CryptoLevel3(data, master_password)
-    encryption_data_2 = CryptoLevel2(encryption_data, key, lister)
-    encryption_data = CryptoLevel1(encryption_data_2)
-    return encryption_data
+    enc_data_1 = CryptoLevel2(data, key, lister)
+    enc_data_2 = CryptoLevel3(enc_data_1, master_password)
+    enc_data_total = CryptoLevel1(enc_data_2)
+    return enc_data_total
 
 
 def DecryptionData(encryption_data, key, master_password, lister):
     """ Decryption encryption resource """
-    decryption_data_1 = DecryptoLevel1(encryption_data)
-    decryption_data_2 = DecryptoLevel2(decryption_data_1, key, lister)
-    decryption_data = DecryptoLevel3(decryption_data_2, master_password)
-    return decryption_data
+    dec_data_1 = DecryptoLevel1(encryption_data)
+    dec_data_2 = DecryptoLevel3(dec_data_1, master_password)
+    dec_data_total = DecryptoLevel2(dec_data_2, key, lister)
+    return dec_data_total
 
 
 def GreatingDependingOnDateTime(master_password):
@@ -174,27 +177,27 @@ def GreatingDependingOnDateTime(master_password):
             total = " ".join(seq)
             return total
 
-    if os.path.exists(self_name_file) == bool(False):  # Создание файла с именем
-        with open(self_name_file, "w") as self_name:
+    if os.path.exists(file_self_name) == bool(False):  # Создание файла с именем
+        with open(file_self_name, "w") as self_name:
             name = input(yellow + ' - Your name or nickname: ' + mc)
             enc_name = EncryptionByTwoLevels(name, master_password)
             self_name.write(enc_name)
             self_name.close()
             return Time(name)
     else:  # Чтение из файла с именем и вывод в консоль
-        with open(self_name_file, "r") as self_name:
+        with open(file_self_name, "r") as self_name:
             dec_name = self_name.readline()
             name = DecryptionByTwoLevels(dec_name, master_password)
             return Time(name)
 
 
-def MakingRows(master_password):
+def MakingRows(master_password, symbols):
     ClearTerminal()
     print(yellow + 'Making files. Please, wait ...' + mc)
     global gty_for_listers
     for q in range(gty_for_listers):
         symb = []
-        for j in main_lyster:
+        for j in symbols:
             symb.append(j)
         random.shuffle(symb)
         string = ''.join(symb)  # Добавление символов в строку
@@ -202,20 +205,19 @@ def MakingRows(master_password):
         enc_string = CryptoLevel3(string, master_password)
         total = CryptoLevel1(enc_string)
         # Recording data to file
-        with open(lister_file, "a") as lister:  # Opening a file as "file"
+        with open(file_lister, "a") as lister:  # Opening a file as "file"
             lister.write(total)  # Recording an encrypted message
             lister.write('\n')  # Line break
             lister.close()  # Closing the file to save data
     ClearTerminal()
     print(green + '\n\n ---  All right! --- \n' + mc)
-    sleep(.7)
     ClearTerminal()
 
 
 def AppendInListerFromFile(additional_key, master_password):
     """ Добавление нужной строки из файла в список для дальнейшего использования """
     lister_for_return = []  # Пустой список
-    with open(lister_file) as file:  # Файл с рандомными
+    with open(file_lister) as file:  # Файл с рандомными
         s = 0  # Счетчик (по умолчанию 0)
         for row in file:  # Перебор по строкам файла
             s += 1  # Счетчик увеличивается на 1
@@ -301,7 +303,7 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
         """ Генерирование нового случайного пароля """
         pas_gen = ''  # Empty password
         for pas_elem in range(length):
-            pas_gen += random.choice(main_lyster)  # Password Adding random symbols from lister
+            pas_gen += random.choice(symbols_for_password)  # Password Adding random symbols from lister
         return pas_gen  # Возвращает пароль
 
     change = int(input('Change (1/2): '))
@@ -353,6 +355,7 @@ def ShowContent(key, master_password, lister):
                      '\n  - Enter "-a" to add new resource',
               '\n  - Enter "-d" to remove resource',
               '\n  - Enter "-u" to update program',
+              '\n  - Enter "-n" to go to notes' + red, 'NEW!',
               yellow, '\n Select resource by number', mc)
 
 
@@ -361,7 +364,6 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
     def GetKeys():
         key, additional_key = getUniqueSewnKey(master_password)  # Получение новых ключей
         return int(key), int(additional_key)
-
     if check_file_date_base == bool(False):
         key, additional_key = GetKeys()
         lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
@@ -371,7 +373,7 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
             master_password = getpass(yellow + ' -- Your secure word: ' + mc)
             # Проверка хэша пароля
             enc_pas = EncryptionByTwoLevels(master_password, master_password)
-            master_password_from_file = open(hash_password_file)
+            master_password_from_file = open(file_hash_password)
             enc_pas_from_file = ''
             for hash_pas in master_password_from_file.readlines():
                 enc_pas_from_file = hash_pas
@@ -429,24 +431,23 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             elif change_resource_or_actions == '-u':    # Обновление программы из репозитория
                 ClearTerminal()
                 main_file = 'pwManager.py'
-                delite_folder_after_update = 'rm -r pwManager/ -f'
                 os.system('git clone https://github.com/Berliner187/pwManager')
                 if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
                     change = input(yellow + ' - Install? (y/n)' + mc)
                     if change == 'y':
-                        os.system('cp pwManager/' + main_file + ' .; ' + delite_folder_after_update)
+                        os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
                         ClearTerminal()
                         print(green + ' -- Update successfully! -- ' + mc)
                         sleep(1)
                         os.system('./' + main_file)
                     else:
-                        os.system(delite_folder_after_update)
+                        os.system('rm -r pwManager/ -f')
                         ShowContent(key, master_password, lister_row)
                         DecryptionBlock(master_password, key, lister_row, resource, login)
                 else:
                     ClearTerminal()
                     print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
-                    os.system(delite_folder_after_update)
+                    os.system('rm -r pwManager/ -f')
                     sleep(.7)
                     ShowContent(key, master_password, lister_row)
             elif change_resource_or_actions == '-x':  # Условие выхода
@@ -491,26 +492,130 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 os.system('rm ' + new_file_date_base)   # Удаление нового файла
                 ShowContent(key, master_password, lister_row)
                 DecryptionBlock(master_password, key, lister_row, resource, login)
+            elif change_resource_or_actions == '-n':    # Добавление заметок
+                ClearTerminal()
+                while True:
+                    if check_file_notes == bool(True):  # Если файл с заметками уже есть
+                        def show():     # Показ сохраненных заметок
+                            with open(file_notes, encoding='utf-8') as notes:
+                                reader_notes = DictReader(notes, delimiter=',')
+                                print(yellow + '       ---  Saved notes --- ', '\n' * 3 + mc)
+                                number_note = 0     # Номер заметки
+                                for name in reader_notes:
+                                    number_note += 1
+                                    dec_name_note = DecryptionData(name["name_note"], key,
+                                                                   master_password, lister_row)
+                                    print(number_note, dec_name_note)
+                                print(blue + '\n  - Press "Enter" to go back'
+                                             '\n  - Enter "-a" to add new note'
+                                             '\n  - Enter "-d" to remove note',
+                                      yellow, '\n Select note by number', mc)
+                        show()
+
+                    def add_new():
+                        ClearTerminal()
+                        print(blue + '    ---  Add new note  --- \n\n')
+                        os.system('touch ' + main_folder + 'notes.csv')
+                        with open(file_notes, mode="a", encoding='utf-8') as data_note:
+                            writer_note_add = DictWriter(data_note, fieldnames=['name_note', 'note'])
+                            name_note = input(yellow + ' - Note name: ' + mc)
+                            note = input(purple + ' - Note: ' + mc)
+                            enc_name_note = EncryptionData(name_note, key, master_password, lister_row)
+                            enc_note = EncryptionData(note, key, master_password, lister_row)
+                            writer_note_add.writerow({
+                                'name_note': enc_name_note,
+                                'note': enc_note})
+                        print(green, '   -- Success saved! --')
+                        sleep(.3)
+                        if check_file_notes == bool(False):
+                            RestartProgram()
+                        else:
+                            ClearTerminal()
+                            show()
+
+                    if check_file_notes == bool(False):
+                        with open(file_notes, mode="a", encoding='utf-8') as data:
+                            open_note = DictWriter(data, fieldnames=['name_note', 'note'])
+                            open_note.writeheader()
+                        add_new()
+                        RestartProgram()
+                    else:
+
+                        def work():
+                            mas_name_note, mas_note = [], []
+                            with open(file_notes, encoding='utf-8') as notes:
+                                reader_of_note = DictReader(notes, delimiter=',')
+                                for note_row in reader_of_note:
+                                    dec_name_note = DecryptionData(note_row["name_note"], key, master_password, lister_row)
+                                    dec_note = DecryptionData(note_row["note"], key, master_password, lister_row)
+                                    mas_name_note.append(dec_name_note)
+                                    mas_note.append(dec_note)
+                            change_action = input(' - Change: ')
+                            if change_action == '-a':
+                                add_new()
+                            elif change_action == '-d':
+                                print(blue + '\n -- Change by number note -- ' + mc)
+                                change_note_by_num = int(input(yellow + ' - Note number: ' + mc))
+                                # Выгрузка старого
+                                with open(file_notes, encoding='utf-8') as saved_note:
+                                    read_note = DictReader(saved_note, delimiter=',')
+                                    mas_name_note_rm, mas_note_rm = [], []
+                                    cnt_note = 0
+                                    for row_note in read_note:
+                                        cnt_note += 1
+                                        if cnt_note == change_note_by_num:
+                                            cnt_note += 1
+                                        else:  # Нужные ресурсы добавляются в массивы
+                                            mas_name_note_rm.append(row_note["name_note"])
+                                            mas_note_rm.append(row_note["note"])
+                                    saved_note.close()
+                                # Перенос в новый файл
+                                new_file_notes = 'new_data.dat'
+                                with open(new_file_notes, mode="a", encoding='utf-8') as new_notes:
+                                    write_note = DictWriter(new_notes, fieldnames=['name_note', 'note'])
+                                    write_note.writeheader()
+                                    for j in range(cnt_note-2):
+                                        write_note.writerow({
+                                            'name_note': mas_name_note_rm[j],
+                                            'note': mas_note_rm[j]})
+                                    new_notes.close()
+                                # Замена старого файла на актуальный
+                                copyfile('new_data.dat', file_notes)  # Старый записывается новым файлом
+                                os.system('rm ' + new_file_notes)  # Удаление нового файла
+                                ClearTerminal()
+                                show()
+                            else:
+                                with open(file_notes, encoding='utf-8') as saved_note:
+                                    read_note = DictReader(saved_note, delimiter=',')
+                                    count = 0
+                                    for line_of_note in read_note:
+                                        count += 1
+                                        if count == int(change_action):
+                                            ClearTerminal()
+                                            show()
+                                            print(yellow, '\n Name:', green,
+                                                  DecryptionData(line_of_note["name_note"], key,
+                                                                 master_password, lister_row),
+                                                  yellow, '\n Note:', mc,
+                                                  DecryptionData(line_of_note["note"], key,
+                                                                 master_password, lister_row))
+                            work()
+                        work()
             else:
                 with open(file_date_base, encoding='utf-8') as profiles:
                     reader = DictReader(profiles, delimiter=',')
-                    count = 0   # Счетчик
+                    s = 0
                     for line in reader:  # Iterating over lines file
-                        count += 1
-                        if count == int(change_resource_or_actions):   # Выбор ресурса по номеру
+                        s += 1
+                        if s == int(change_resource_or_actions):
                             ClearTerminal()
                             ShowContent(key, master_password, lister_row)
-                            encryption_resource = line["resource"]
-                            encryption_login = line["login"]
-                            encryption_password = line["password"]
-                            # Дешифровка ресурса
-                            decryption_res = DecryptionData(encryption_resource, key, master_password, lister_row)
-                            decryption_log = DecryptionData(encryption_login, key, master_password, lister_row)
-                            decryption_pas = DecryptionData(encryption_password, key, master_password, lister_row)
-                            # Вывод данных по ресурсу
-                            print('\n Resource:', green, decryption_res, mc,
-                                  '\n Login:   ', green, decryption_log, mc,
-                                  '\n Password:', green, decryption_pas, mc)
+                            print('\n Resource:', green, DecryptionData(line["resource"], key,
+                                                                        master_password, lister_row), mc,
+                                  '\n Login:   ', green, DecryptionData(line["login"], key,
+                                                                        master_password, lister_row), mc,
+                                  '\n Password:', green, DecryptionData(line["password"], key,
+                                                                        master_password, lister_row), mc)
         except ValueError:
             ShowContent(key, master_password, lister_row)
             DecryptionBlock(master_password, key, lister_row, resource, login)
@@ -525,18 +630,21 @@ def MainFun():
     if check_file_date_base == bool(False):   # Если файла нет, идет создание файла с ресурсами
         print(blue + "\n  - Encrypt your passwords with one master-password -    "
                      "\n  -           No resources saved. Add them!         -  \n"
-                     "\n ----                That's easy!                 ---- \n"
-                     '\n --             Создание мастер-пароля                -- '
+                     "\n ----                That's easy!                 ---- \n",
+              red,
+                     "\n         Программа не поддерживает русский язык          ",
+              yellow,
+                     '\n --              Создание мастер-пароля               -- '
                      '\n --    Только не используйте свой банковский пароль,  -- '
                      '\n          я не сильно вкладывался в безопасность         '
-                     '\n                    этой программы                       ' + mc)
+                     '\n                     этой программы                      ' + mc)
         master_password = ConfirmUserPass()
-        hash_pas = open(hash_password_file, 'w')    # Файл с хэшем
+        hash_pas = open(file_hash_password, 'w')
         enc_pas = EncryptionByTwoLevels(master_password, master_password)
-        hash_pas.write(enc_pas)     # Сохранение хэша
+        hash_pas.write(enc_pas)
         hash_pas.close()
         if check_file_lister == bool(False):
-            MakingRows(master_password)
+            MakingRows(master_password, main_symbols)
         print(GreatingDependingOnDateTime(master_password))
         sleep(.7)
         # Данные для сохранения
@@ -556,7 +664,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n Password Manager v1.4.4 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n Password Manager v1.4.5 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
