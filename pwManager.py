@@ -130,8 +130,8 @@ def DecryptionByTwoLevels(anything, master_password):   # Decryption by two leve
 
 def EncryptionData(data, key, master_password, lister):
     """ Decryption encryption resource """
-    enc_data_1 = CryptoLevel2(data, key, lister)
-    enc_data_2 = CryptoLevel3(enc_data_1, master_password)
+    enc_data_1 = CryptoLevel3(data, master_password)
+    enc_data_2 = CryptoLevel2(enc_data_1, key, lister)
     enc_data_total = CryptoLevel1(enc_data_2)
     return enc_data_total
 
@@ -139,8 +139,8 @@ def EncryptionData(data, key, master_password, lister):
 def DecryptionData(encryption_data, key, master_password, lister):
     """ Decryption encryption resource """
     dec_data_1 = DecryptoLevel1(encryption_data)
-    dec_data_2 = DecryptoLevel3(dec_data_1, master_password)
-    dec_data_total = DecryptoLevel2(dec_data_2, key, lister)
+    dec_data_2 = DecryptoLevel2(dec_data_1, key, lister)
+    dec_data_total = DecryptoLevel3(dec_data_2, master_password)
     return dec_data_total
 
 
