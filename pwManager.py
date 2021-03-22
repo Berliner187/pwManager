@@ -355,7 +355,8 @@ def ShowContent(key, master_password, lister):
                      '\n  - Enter "-a" to add new resource'
               '\n  - Enter "-d" to remove resource',
               '\n  - Enter "-u" to update program',
-              '\n  - Enter "-n" to go to notes' + red, 'NEW!',
+              '\n  - Enter "-n" to go to notes' + red, 'NEW!', blue,
+              '\n  - Enter "-z" to remove ALL data', red, 'NEW!', mc,
               yellow, '\n Select resource by number', mc)
 
 
@@ -601,6 +602,14 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                                                  master_password, lister_row))
                             work()
                         work()
+            elif change_resource_or_actions == '-z':
+                print(yellow + ' - Are you sure you want to delete all data? - ' + mc)
+                change_yes_or_no = input(yellow + ' - Remove ALL data? (y/n): ')
+                if change_yes_or_no == 'y':
+                    os.system('rm -r files/')
+                    print(green + ' -- Success remove! -- ' + mc)
+                else:
+                    pass
             else:
                 with open(file_date_base, encoding='utf-8') as profiles:
                     reader = DictReader(profiles, delimiter=',')
