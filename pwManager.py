@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5 Stable For Linux (SFL)
+# Password manager v1.4.5.1 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -353,10 +353,10 @@ def ShowContent(key, master_password, lister):
             print(str(s) + '. ' + decryption_res)    # Decryption resource
         print(blue + '\n  - Enter "-r" to restart, "-x" to exit'
                      '\n  - Enter "-a" to add new resource'
-              '\n  - Enter "-d" to remove resource',
-              '\n  - Enter "-u" to update program',
-              '\n  - Enter "-n" to go to notes' + red, 'NEW!', blue,
-              '\n  - Enter "-z" to remove ALL data', red, 'NEW!', mc,
+              '\n  - Enter "-d" to remove resource'
+              '\n  - Enter "-u" to update program'
+              '\n  - Enter "-n" to go to notes'
+              '\n  - Enter "-z" to remove ALL data',
               yellow, '\n Select resource by number', mc)
 
 
@@ -555,7 +555,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                     dec_note = DecryptionData(note_row["note"], key, master_password, lister_row)
                                     mas_name_note.append(dec_name_note)
                                     mas_note.append(dec_note)
-                            change_action = input(' - Change: ')
+                            change_action = input('\n - Change: ')
                             if change_action == '-a':
                                 add_new()
                             elif change_action == '-d':
@@ -676,7 +676,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n Password Manager v1.4.5 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n Password Manager v1.4.5.1 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
