@@ -607,8 +607,9 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                             work()
                         work()
             elif change_resource_or_actions == '-z':
-                print(yellow + ' - Are you sure you want to delete all data? - ' + mc)
-                change_yes_or_no = input(yellow + ' - Remove ALL data? (y/n): ')
+                ClearTerminal()
+                print(red + '\n - Are you sure you want to delete all data? - ' + mc)
+                change_yes_or_no = input(yellow + ' - Remove ALL data? (y/n): ' + mc)
                 if change_yes_or_no == 'y':
                     os.system('rm -r files/')
                     print(green + ' -- Success remove! -- ' + mc)
