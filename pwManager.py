@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.1 Stable For Linux (SFL)
+# Password manager v1.4.5.2 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -547,20 +547,12 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                     else:
 
                         def work():     # Работа в лейбле с заметками
-                            mas_name_note, mas_note = [], []
-                            with open(file_notes, encoding='utf-8') as notes:
-                                reader_of_note = DictReader(notes, delimiter=',')
-                                for note_row in reader_of_note:
-                                    dec_name_note = DecryptionData(note_row["name_note"], key, master_password, lister_row)
-                                    dec_note = DecryptionData(note_row["note"], key, master_password, lister_row)
-                                    mas_name_note.append(dec_name_note)
-                                    mas_note.append(dec_note)
-                            change_action = input('\n - Change: ')
-                            if change_action == '-a':
+                            change_action = input('\n - Change: ')  # Выбор между действиями
+                            if change_action == '-a':   # Пользователь выбирает добавление новой заметки
                                 add_new()
-                            elif change_action == '-d':
+                            elif change_action == '-d': # Пользователь выбирает удаление старой заметки
                                 print(blue + '\n -- Change by number note -- ' + mc)
-                                change_note_by_num = int(input(yellow + ' - Note number: ' + mc))
+                                change_note_by_num = int(input(yellow + ' - Note number: ' + mc))   # Выбор цифрой
                                 # Выгрузка старого
                                 with open(file_notes, encoding='utf-8') as saved_note:
                                     read_note = DictReader(saved_note, delimiter=',')
@@ -575,7 +567,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                             mas_note_rm.append(row_note["note"])
                                     saved_note.close()
                                 # Перенос в новый файл
-                                new_file_notes = 'new_data.dat'
+                                new_file_notes = 'new_note.dat'
                                 with open(new_file_notes, mode="a", encoding='utf-8') as new_notes:
                                     write_note = DictWriter(new_notes, fieldnames=['name_note', 'note'])
                                     write_note.writeheader()
@@ -585,33 +577,34 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                             'note': mas_note_rm[j]})
                                     new_notes.close()
                                 # Замена старого файла на актуальный
-                                copyfile('new_data.dat', file_notes)  # Старый записывается новым файлом
+                                copyfile(new_file_notes, file_notes)  # Старый записывается новым файлом
                                 os.system('rm ' + new_file_notes)  # Удаление нового файла
                                 ClearTerminal()
                                 show()
-                            else:
-                                with open(file_notes, encoding='utf-8') as saved_note:
-                                    read_note = DictReader(saved_note, delimiter=',')
-                                    count = 0
+                            else:   # Вывод дешифрованных данных по выбранной цифре
+                                with open(file_notes, encoding='utf-8') as saved_note:  # Открытие в csv-формате
+                                    read_note = DictReader(saved_note, delimiter=',')   # Чтение библиоткой csv
+                                    count = 0   # Счетчик
                                     for line_of_note in read_note:
                                         count += 1
-                                        if count == int(change_action):
+                                        if count == int(change_action):  # Если счетчик совпадает с выбранным значением
                                             ClearTerminal()
-                                            show()
+                                            show()  # Показываются сохраненные имена заметок
+                                            # Выводится зашифрованный вид выбранной заметки
                                             print(yellow, '\n Name:', green,
                                                   DecryptionData(line_of_note["name_note"], key,
                                                                  master_password, lister_row),
                                                   yellow, '\n Note:', mc,
                                                   DecryptionData(line_of_note["note"], key,
                                                                  master_password, lister_row))
-                            work()
-                        work()
-            elif change_resource_or_actions == '-z':
+                            work()  # Рекурсия
+                        work()  # Запуск
+            elif change_resource_or_actions == '-z':    # Удаление всех данных пользователя
                 ClearTerminal()
-                print(red + '\n - Are you sure you want to delete all data? - ' + mc)
-                change_yes_or_no = input(yellow + ' - Remove ALL data? (y/n): ' + mc)
+                print(red + '\n\n - Are you sure you want to delete all data? - ' + mc)
+                change_yes_or_no = input(yellow + ' - Remove ALL data? (y/n): ' + mc)   # Запрос подтверждения
                 if change_yes_or_no == 'y':
-                    os.system('rm -r files/')
+                    os.system('rm -r files/')   # Удаление папки
                     print(green + ' -- Success remove! -- ' + mc)
                 else:
                     pass
@@ -631,9 +624,8 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                   '\n Password:', green, DecryptionData(line["password"], key,
                                                                         master_password, lister_row), mc)
         except ValueError:
-            ShowContent(key, master_password, lister_row)
-            DecryptionBlock(master_password, key, lister_row, resource, login)
-        DecryptionBlock(master_password, key, lister_row, resource, login)
+            ShowContent(key, master_password, lister_row)   # Показ содежимого
+        DecryptionBlock(master_password, key, lister_row, resource, login)  # Рекусрия под-главной функции
     else:
         AddResourceData(resource, login, key, master_password, lister_row)
         RestartProgram()
@@ -676,7 +668,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n Password Manager v1.4.5.1 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n Password Manager v1.4.5.2 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
