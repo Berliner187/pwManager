@@ -412,7 +412,7 @@ def UpdateProgram(master_password, key, lister_row, resource, login, status):
     if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
         install_or_no = input(yellow + ' - Install? (y/n): ' + mc)
         if install_or_no == 'y':
-            os.system('cp pwManager/' + main_file + ' .; rm -r pwManager/ -f')
+            os.system('cp pwManager/' + main_file + ' . ; rm -r pwManager/ -f')
             ClearTerminal()
             print(green + ' -- Update successfully! -- ' + mc)
             sleep(.6)
@@ -684,6 +684,6 @@ if __name__ == '__main__':
         ClearTerminal()
         print(red + ' -- You can try to update the program -- ' + mc)
         change = input(yellow + ' - Update? (y/n): ' + mc)
-        if change == 'y':
+        if change == 'y':   # Если получает запрос от юзера
             UpdateProgram(None, None, None, None, None, False)
         RestartProgram()
