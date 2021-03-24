@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.2 Stable For Linux (SFL)
+# Password manager v1.4.5.3 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -22,7 +22,9 @@ def RestartProgram():
     os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
-yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m" # Colours
+# Colours and effects
+yellow, blue, purple, green, mc, red, under_line = "\033[33m", "\033[36m", "\033[35m", \
+                                       "\033[32m", "\033[0m", "\033[31m", "\033[4m"
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
@@ -510,7 +512,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                     number_note += 1
                                     dec_name_note = DecryptionData(name["name_note"], key,
                                                                    master_password, lister_row)
-                                    print(number_note, dec_name_note)   # Вывод названий заметок и их порядкового номера
+                                    print(str(number_note) + '.', dec_name_note)   # Вывод названий заметок и их порядкового номера
                                 print(blue + '\n  - Press "Enter" to go back'
                                              '\n  - Enter "-a" to add new note'
                                              '\n  - Enter "-d" to remove note',
@@ -593,10 +595,10 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                             # Выводится зашифрованный вид выбранной заметки
                                             print(yellow, '\n Name:', green,
                                                   DecryptionData(line_of_note["name_note"], key,
-                                                                 master_password, lister_row),
-                                                  yellow, '\n Note:', mc,
+                                                                 master_password, lister_row), mc,
+                                                  yellow, '\n Note:', green,
                                                   DecryptionData(line_of_note["note"], key,
-                                                                 master_password, lister_row))
+                                                                 master_password, lister_row), mc)
                             work()  # Рекурсия
                         work()  # Запуск
             elif change_resource_or_actions == '-z':    # Удаление всех данных пользователя
@@ -605,7 +607,8 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 change_yes_or_no = input(yellow + ' - Remove ALL data? (y/n): ' + mc)   # Запрос подтверждения
                 if change_yes_or_no == 'y':
                     os.system('rm -r files/')   # Удаление папки
-                    print(green + ' -- Success remove! -- ' + mc)
+                    ClearTerminal()
+                    quit()
                 else:
                     pass
             else:
@@ -617,12 +620,12 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                         if s == int(change_resource_or_actions):
                             ClearTerminal()
                             ShowContent(key, master_password, lister_row)
-                            print('\n Resource:', green, DecryptionData(line["resource"], key,
-                                                                        master_password, lister_row), mc,
-                                  '\n Login:   ', green, DecryptionData(line["login"], key,
-                                                                        master_password, lister_row), mc,
-                                  '\n Password:', green, DecryptionData(line["password"], key,
-                                                                        master_password, lister_row), mc)
+                            print(yellow, '\n Resource:', under_line + green,
+                                  DecryptionData(line["resource"], key, master_password, lister_row), mc,
+                                  yellow, '\n Login:   ', under_line + green,
+                                  DecryptionData(line["login"], key, master_password, lister_row), mc,
+                                  yellow, '\n Password:', under_line + green,
+                                  DecryptionData(line["password"], key, master_password, lister_row), mc)
         except ValueError:
             ShowContent(key, master_password, lister_row)   # Показ содежимого
         DecryptionBlock(master_password, key, lister_row, resource, login)  # Рекусрия под-главной функции
@@ -668,7 +671,7 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n Password Manager v1.4.5.2 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n Password Manager v1.4.5.3 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
