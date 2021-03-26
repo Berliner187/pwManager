@@ -620,11 +620,11 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                         if s == int(change_resource_or_actions):
                             ClearTerminal()
                             ShowContent(key, master_password, lister_row)
-                            print(yellow, '\n Resource:', under_line + green,
+                            print(yellow, '\n Resource:', green,
                                   DecryptionData(line["resource"], key, master_password, lister_row), mc,
-                                  yellow, '\n Login:   ', under_line + green,
+                                  yellow, '\n Login:   ', green,
                                   DecryptionData(line["login"], key, master_password, lister_row), mc,
-                                  yellow, '\n Password:', under_line + green,
+                                  yellow, '\n Password:', green,
                                   DecryptionData(line["password"], key, master_password, lister_row), mc)
         except ValueError:
             ShowContent(key, master_password, lister_row)   # Показ содежимого
