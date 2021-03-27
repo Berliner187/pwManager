@@ -25,8 +25,9 @@ try:
     import enc_module_obs
 except ModuleNotFoundError:
     os.system('git clone https://github.com/Berliner187/pwManager')
+    ClearTerminal()
     os.system('cp pwManager/enc_module_obs.py .')
-    os.system('rm -r pwManager/')
+    os.system('rm -r pwManager/ -f')
     RestartProgram()
 
 version = 'v1.4.5.5'
@@ -321,6 +322,7 @@ def DataForResource(master_password):
 def UpdateProgram(master_password, key, lister_row, resource, login, status):
     main_file = 'pwManager.py'
     os.system('git clone https://github.com/Berliner187/pwManager')
+    ClearTerminal()
     if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
         install_or_no = input(yellow + ' - Install? (y/n): ' + mc)
         if install_or_no == 'y':
