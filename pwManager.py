@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.3 Stable For Linux (SFL)
+# Password manager v1.4.5.4 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -178,7 +178,6 @@ def GreatingDependingOnDateTime(master_password):
             seq = (green, 'Good night,', name, mc)
             total = " ".join(seq)
             return total
-
     if os.path.exists(file_self_name) == bool(False):  # Создание файла с именем
         with open(file_self_name, "w") as self_name:
             name = input(yellow + ' - Your name or nickname: ' + mc)
@@ -193,26 +192,23 @@ def GreatingDependingOnDateTime(master_password):
             return Time(name)
 
 
-def MakingRows(master_password, symbols):
+def MakingRows(master_password, symbols):   # Зашифрованные строки
     ClearTerminal()
     print(yellow + 'Making files. Please, wait ...' + mc)
-    global gty_for_listers
-    for q in range(gty_for_listers):
-        symb = []
-        for j in symbols:
-            symb.append(j)
-        random.shuffle(symb)
+    global gty_for_listers  # Число строк
+    for q in range(gty_for_listers):    # Генерируются строки в кол-ве указанных
+        symb = []   # Массив для символов
+        for j in symbols:   # Перебор по всем символам
+            symb.append(j)  # Добавление в массив
+        random.shuffle(symb)    # Перемешивание
         string = ''.join(symb)  # Добавление символов в строку
         # Шифрование строки
-        enc_string = CryptoLevel3(string, master_password)
-        total = CryptoLevel1(enc_string)
+        total = EncryptionByTwoLevels(string, master_password)
         # Recording data to file
         with open(file_lister, "a") as lister:  # Opening a file as "file"
             lister.write(total)  # Recording an encrypted message
             lister.write('\n')  # Line break
             lister.close()  # Closing the file to save data
-    ClearTerminal()
-    print(green + '\n\n ---  All right! --- \n' + mc)
     ClearTerminal()
 
 
@@ -224,8 +220,8 @@ def AppendInListerFromFile(additional_key, master_password):
         for row in file:  # Перебор по строкам файла
             s += 1  # Счетчик увеличивается на 1
             if s == additional_key:  # Если значение счетчика равно дополнительному ключу
-                dec_row = DecryptoLevel1(row)
-                total = DecryptoLevel3(dec_row, master_password)
+                # Дешифровка нужной строки
+                total = DecryptionByTwoLevels(row, master_password)
                 for syb in total:  # Перебор строки посимвольно
                     lister_for_return.append(syb)  # Добавление символов в ранее пустой список
     return lister_for_return
@@ -235,27 +231,29 @@ def getUniqueSewnKey(master_password):
     """ Make unique key """
     global gty_for_listers
     if check_file_keys == bool(False):
-        key = random.randrange(52)
-        additional_key = random.randrange(gty_for_listers)  # Выбор случайного значения из массива
-        # Encryption unique-key
+        key = random.randrange(52)  # Случайный выбор числа
+        additional_key = random.randrange(gty_for_listers)  # Выбор случайного числа из массива
+        # Шифрование ключей
         crypto_key = EncryptionByTwoLevels(key, master_password)
         crypto_additional_key = EncryptionByTwoLevels(additional_key, master_password)
         key, additional_key = str(key), str(additional_key)
-
         with open(file_keys, mode="w", encoding='utf-8') as data:
             writer = DictWriter(data, fieldnames=['key', 'additional_key'])
             if check_file_keys == bool(False):
-                writer.writeheader()
+                writer.writeheader() # Создание столбцов
+            # Запись в файл
             writer.writerow({
                 'key': crypto_key,
                 'additional_key': crypto_additional_key})
             return str(key), str(additional_key)
     else:
+        # Чтение ключей из файла
         with open(file_keys, encoding='utf-8') as profiles:
             reader = DictReader(profiles, delimiter=',')
             for row in reader:
                 key = row["key"]
                 additional_key = row["additional_key"]
+            # Дешифровка ключей
             decryption_key = DecryptionByTwoLevels(key, master_password)
             decryption_additional_key = DecryptionByTwoLevels(additional_key, master_password)
             return str(decryption_key), str(decryption_additional_key)
@@ -266,7 +264,8 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
     with open(file_date_base, mode="a", encoding='utf-8') as data:
         writer = DictWriter(data, fieldnames=['resource', 'login', 'password'])
         if check_file_date_base == bool(False):
-            writer.writeheader()
+            writer.writeheader()    # Запись заголовков
+        # Шифрование ресурсов
         crypto_res = EncryptionData(resource, key, master_password, lister)
         crypto_log = EncryptionData(login, key, master_password, lister)
         crypto_pas = EncryptionData(password, key, master_password, lister)
@@ -277,7 +276,7 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
 
 
 def ConfirmUserPass():
-    """ Confirm user input password """
+    """ Подтвержение пользовательского пароля """
     def UserInput():
         user_password = getpass(' Password: ')
         user_confirm_password = getpass(' Confirm password: ')
@@ -296,18 +295,16 @@ def ConfirmUserPass():
 
 
 def ChangeTypeOfPass(resource, login, key, master_password, lister):
-    """ Change type of password: user or generation """
+    """ Выбор пароля: генерирование нового или сохрание """
     def DoForNewGeneratedPassword(resource, login, password, key, lister, master_password):
         SaveDataToFile(resource, login, password, key, lister, master_password)
         print('  Your new password - ' + green + password + mc + ' - success saved')
-
     def GenerationPassword(length):
         """ Генерирование нового случайного пароля """
         pas_gen = ''  # Empty password
         for pas_elem in range(length):
             pas_gen += random.choice(symbols_for_password)  # Password Adding random symbols from lister
         return pas_gen  # Возвращает пароль
-
     change = int(input('Change (1/2): '))
     if change == 1:  # Generation new password
         length = int(input(' Length password (Minimum 8): '))
@@ -323,8 +320,8 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
                     DoForNewGeneratedPassword(resource, login, password, key, lister, master_password)
         sleep(3)
 
-    elif change == 2:  # Save user password
-        password = ConfirmUserPass()  # Input password
+    elif change == 2:  # Сохранение пользовательского пароля
+        password = ConfirmUserPass()  # Ввод пароля
         SaveDataToFile(resource, login, password, key, lister, master_password)
         print(green + '\n  - Your password successfully saved! -  ' + mc)
         sleep(1)
@@ -334,10 +331,10 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
         ChangeTypeOfPass(resource, login, key, master_password, lister)
     ClearTerminal()
 
-    if check_file_date_base == bool(False):     # Перезапуск для корректной работы дальше
+    if check_file_date_base == bool(False):  # Перезапуск для корректной работы
         RestartProgram()
     else:
-        ShowContent(key, master_password, lister)       # Показ содержимого файла с ресурсами
+        ShowContent(key, master_password, lister)   # Показ содержимого файла с ресурсами
         DecryptionBlock(master_password, key, lister, resource, login)  # Start cycle
 
 
@@ -363,7 +360,7 @@ def ShowContent(key, master_password, lister):
 
 
 def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
-    """ Get secure_word, unique-keys """
+    """ Получение мастер-пароля и доп. ключей """
     def GetKeys():
         key, additional_key = getUniqueSewnKey(master_password)  # Получение новых ключей
         return int(key), int(additional_key)
@@ -387,7 +384,7 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
                 sleep(1.4)
                 ClearTerminal()
                 MainFun()
-        key, additional_key = GetKeys()
+        key, additional_key = GetKeys()  # Получение ключей
         lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
         return key, lister_row, master_password
 
@@ -671,7 +668,14 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n Password Manager v1.4.5.3 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n Password Manager v1.4.5.4 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        if os.path.exists(main_folder + '.updates.dat') == bool(False):
+            ClearTerminal()
+            with open(main_folder + '.updates.dat', 'w') as updates:
+                updates.write('v1.4.5.4')
+                updates.close()
+            print(green + '\n\n - Latest update optimization program! - ' + mc)
+            sleep(3)
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
