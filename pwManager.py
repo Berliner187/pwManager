@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.4 Stable For Linux (SFL)
+# Password manager v1.4.5.5 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
 from csv import DictReader, DictWriter
-from base64 import urlsafe_b64encode, urlsafe_b64decode
 import random
 import datetime
 from time import sleep
 from getpass import getpass
 from shutil import copyfile
+import enc_module_obs
+
+version = 'v1.4.5.5'
 
 
 def ClearTerminal():
@@ -47,105 +49,6 @@ if os.path.exists(main_folder) == bool(False):
     os.mkdir(main_folder)
 
 
-# Уровни шифрования
-def CryptoLevel1(text, encoding='utf-8', errors='surrogatepass'):
-    """ Translation to binary view """
-    bits = bin(int.from_bytes(text.encode(encoding, errors), 'big'))[2:]
-    return bits.zfill(8 * ((len(bits) + 7) // 8))
-
-
-def DecryptoLevel1(bits, encoding='utf-8', errors='surrogatepass'):
-    """ Translation from binary """
-    n = int(bits, 2)
-    return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode(encoding, errors) or '\0'
-
-
-def CryptoLevel2(password, key, lister):
-    """ Encryption based Caesar """
-    key = int(key)
-    first_message = ''
-    second_message = ''
-    third_message = ''
-    for a in password:  # First pass
-        first_message += lister[
-            (lister.index(a) - key) % len(lister)]  # Permutation to n-amount of first pass
-    for b in first_message:  # Second pass
-        second_message += lister[
-            (lister.index(b) - key) % len(lister)]  # Permutation to n-amount of second pass
-    for c in second_message:  # Third pass
-        third_message += lister[
-            (lister.index(c) - key) % len(lister)]  # Permutation to n-amount of third pass
-    return third_message
-
-
-def DecryptoLevel2(password, key, lister):
-    """ Decryption based Caesar """
-    key = int(key)
-    first_message = ''
-    second_message = ''
-    third_message = ''
-    for a in password:  # First pass
-        first_message += lister[
-            (lister.index(a) + key) % len(lister)]  # Permutation to n-amount of first pass
-    for b in first_message:  # Second pass
-        second_message += lister[
-            (lister.index(b) + key) % len(lister)]  # Permutation to n-amount of second pass
-    for c in second_message:  # Third pass
-        third_message += lister[
-            (lister.index(c) + key) % len(lister)]  # Permutation to n-amount of third pass
-    return third_message
-
-
-def CryptoLevel3(message, key):
-    """ Base64-based encryption """
-    key, message = str(key), str(message)
-    enc = []
-    for i in range(len(message)):
-        key_c = key[i % len(key)]
-        enc.append(chr((ord(message[i]) + ord(key_c)) % 256))
-    encryption = urlsafe_b64encode("".join(enc).encode()).decode()
-    return encryption
-
-
-def DecryptoLevel3(encryption, key):
-    """ Base64-based decryption """
-    key = str(key)
-    dec = []
-    message = urlsafe_b64decode(encryption).decode()
-    for i in range(len(message)):
-        key_c = key[i % len(key)]
-        dec.append(chr((256 + ord(message[i]) - ord(key_c)) % 256))
-    return "".join(dec)
-
-
-def EncryptionByTwoLevels(anything, master_password):   # Encryption by two levels
-    crypto_start = CryptoLevel3(anything, master_password)
-    crypto = CryptoLevel1(crypto_start)
-    return crypto
-
-
-def DecryptionByTwoLevels(anything, master_password):   # Decryption by two levels
-    decryption_start = DecryptoLevel1(anything)
-    decryption = DecryptoLevel3(decryption_start, master_password)
-    return decryption
-
-
-def EncryptionData(data, key, master_password, lister):
-    """ Decryption encryption resource """
-    enc_data_1 = CryptoLevel3(data, master_password)
-    enc_data_2 = CryptoLevel2(enc_data_1, key, lister)
-    enc_data_total = CryptoLevel1(enc_data_2)
-    return enc_data_total
-
-
-def DecryptionData(encryption_data, key, master_password, lister):
-    """ Decryption encryption resource """
-    dec_data_1 = DecryptoLevel1(encryption_data)
-    dec_data_2 = DecryptoLevel2(dec_data_1, key, lister)
-    dec_data_total = DecryptoLevel3(dec_data_2, master_password)
-    return dec_data_total
-
-
 def GreatingDependingOnDateTime(master_password):
     """ Фунция вывода приветствия в зависимости от времени суток """
     def Time(name):
@@ -181,14 +84,14 @@ def GreatingDependingOnDateTime(master_password):
     if os.path.exists(file_self_name) == bool(False):  # Создание файла с именем
         with open(file_self_name, "w") as self_name:
             name = input(yellow + ' - Your name or nickname: ' + mc)
-            enc_name = EncryptionByTwoLevels(name, master_password)
+            enc_name = enc_module_obs.EncryptionByTwoLevels(name, master_password)
             self_name.write(enc_name)
             self_name.close()
             return Time(name)
     else:  # Чтение из файла с именем и вывод в консоль
         with open(file_self_name, "r") as self_name:
             dec_name = self_name.readline()
-            name = DecryptionByTwoLevels(dec_name, master_password)
+            name = enc_module_obs.DecryptionByTwoLevels(dec_name, master_password)
             return Time(name)
 
 
@@ -203,7 +106,7 @@ def MakingRows(master_password, symbols):   # Зашифрованные стр�
         random.shuffle(symb)    # Перемешивание
         string = ''.join(symb)  # Добавление символов в строку
         # Шифрование строки
-        total = EncryptionByTwoLevels(string, master_password)
+        total = enc_module_obs.EncryptionByTwoLevels(string, master_password)
         # Recording data to file
         with open(file_lister, "a") as lister:  # Opening a file as "file"
             lister.write(total)  # Recording an encrypted message
@@ -221,7 +124,7 @@ def AppendInListerFromFile(additional_key, master_password):
             s += 1  # Счетчик увеличивается на 1
             if s == additional_key:  # Если значение счетчика равно дополнительному ключу
                 # Дешифровка нужной строки
-                total = DecryptionByTwoLevels(row, master_password)
+                total = enc_module_obs.DecryptionByTwoLevels(row, master_password)
                 for syb in total:  # Перебор строки посимвольно
                     lister_for_return.append(syb)  # Добавление символов в ранее пустой список
     return lister_for_return
@@ -234,13 +137,13 @@ def getUniqueSewnKey(master_password):
         key = random.randrange(52)  # Случайный выбор числа
         additional_key = random.randrange(gty_for_listers)  # Выбор случайного числа из массива
         # Шифрование ключей
-        crypto_key = EncryptionByTwoLevels(key, master_password)
-        crypto_additional_key = EncryptionByTwoLevels(additional_key, master_password)
+        crypto_key = enc_module_obs.EncryptionByTwoLevels(key, master_password)
+        crypto_additional_key = enc_module_obs.EncryptionByTwoLevels(additional_key, master_password)
         key, additional_key = str(key), str(additional_key)
         with open(file_keys, mode="w", encoding='utf-8') as data:
             writer = DictWriter(data, fieldnames=['key', 'additional_key'])
             if check_file_keys == bool(False):
-                writer.writeheader() # Создание столбцов
+                writer.writeheader()  # Создание столбцов
             # Запись в файл
             writer.writerow({
                 'key': crypto_key,
@@ -254,8 +157,8 @@ def getUniqueSewnKey(master_password):
                 key = row["key"]
                 additional_key = row["additional_key"]
             # Дешифровка ключей
-            decryption_key = DecryptionByTwoLevels(key, master_password)
-            decryption_additional_key = DecryptionByTwoLevels(additional_key, master_password)
+            decryption_key = enc_module_obs.DecryptionByTwoLevels(key, master_password)
+            decryption_additional_key = enc_module_obs.DecryptionByTwoLevels(additional_key, master_password)
             return str(decryption_key), str(decryption_additional_key)
 
 
@@ -266,9 +169,9 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
         if check_file_date_base == bool(False):
             writer.writeheader()    # Запись заголовков
         # Шифрование ресурсов
-        crypto_res = EncryptionData(resource, key, master_password, lister)
-        crypto_log = EncryptionData(login, key, master_password, lister)
-        crypto_pas = EncryptionData(password, key, master_password, lister)
+        crypto_res = enc_module_obs.EncryptionData(resource, key, master_password, lister)
+        crypto_log = enc_module_obs.EncryptionData(login, key, master_password, lister)
+        crypto_pas = enc_module_obs.EncryptionData(password, key, master_password, lister)
         writer.writerow({
             'resource': crypto_res,
             'login': crypto_log,
@@ -347,15 +250,18 @@ def ShowContent(key, master_password, lister):
         print(yellow + '\n   --- Saved resources ---   ' + '\n'*3 + mc)
         for line in reader:
             encryption_resource = line["resource"]
-            decryption_res = DecryptionData(encryption_resource, key, master_password, lister)
+            decryption_res = enc_module_obs.DecryptionData(encryption_resource, key, master_password, lister)
             s += 1
             print(str(s) + '. ' + decryption_res)    # Decryption resource
-        print(blue + '\n  - Enter "-r" to restart, "-x" to exit'
-                     '\n  - Enter "-a" to add new resource'
+        print(blue +
+              '\n  - Enter "-r" to restart, "-x" to exit'
+              '\n  - Enter "-a" to add new resource'
               '\n  - Enter "-d" to remove resource'
               '\n  - Enter "-u" to update program'
               '\n  - Enter "-n" to go to notes'
-              '\n  - Enter "-z" to remove ALL data',
+              '\n  - Enter "-z" to remove ALL data', green,
+              '\n  - Coming soon new version!', red,
+              '\n  - It will not be compatible with the current',
               yellow, '\n Select resource by number', mc)
 
 
@@ -372,7 +278,7 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
         if status == bool(True):    # Если аргумент status истинен, то идет запрос пароля
             master_password = getpass(yellow + ' -- Your master-password: ' + mc)
             # Проверка хэша пароля
-            enc_pas = EncryptionByTwoLevels(master_password, master_password)
+            enc_pas = enc_module_obs.EncryptionByTwoLevels(master_password, master_password)
             master_password_from_file = open(file_hash_password)
             enc_pas_from_file = ''
             for hash_pas in master_password_from_file.readlines():
@@ -409,14 +315,10 @@ def UpdateProgram(master_password, key, lister_row, resource, login, status):
     main_file = 'pwManager.py'
     os.system('git clone https://github.com/Berliner187/pwManager')
     if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-        ClearTerminal()
-        print(red + ' -- НОВАЯ ВЕРСИЯ НЕ БУДЕТ СОВМЕСТИМА С ТЕКУЩЕЙ! -- ')
-        install_or_no = input(yellow + ' - Установить? (y/n): ' + mc)
+        install_or_no = input(yellow + ' - Install? (y/n): ' + mc)
         if install_or_no == 'y':
             os.system('cp pwManager/' + main_file + ' . ; rm -r pwManager/ -f')
             ClearTerminal()
-            print(green + ' -- Update successfully! -- ' + mc)
-            sleep(.6)
             if status == bool(True):
                 RestartProgram()
         else:
@@ -509,7 +411,7 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                 number_note = 0     # Номер заметки
                                 for name in reader_notes:
                                     number_note += 1
-                                    dec_name_note = DecryptionData(name["name_note"], key,
+                                    dec_name_note = enc_module_obs.DecryptionData(name["name_note"], key,
                                                                    master_password, lister_row)
                                     print(str(number_note) + '.', dec_name_note)   # Вывод названий заметок и их порядкового номера
                                 print(blue + '\n  - Press "Enter" to go back'
@@ -526,8 +428,8 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                             writer_note_add = DictWriter(data_note, fieldnames=['name_note', 'note'])
                             name_note = input(yellow + ' - Note name: ' + mc)
                             note = input(purple + ' - Note: ' + mc)
-                            enc_name_note = EncryptionData(name_note, key, master_password, lister_row)
-                            enc_note = EncryptionData(note, key, master_password, lister_row)
+                            enc_name_note = enc_module_obs.EncryptionData(name_note, key, master_password, lister_row)
+                            enc_note = enc_module_obs.EncryptionData(note, key, master_password, lister_row)
                             writer_note_add.writerow({
                                 'name_note': enc_name_note,
                                 'note': enc_note})
@@ -593,10 +495,10 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                             show()  # Показываются сохраненные имена заметок
                                             # Выводится зашифрованный вид выбранной заметки
                                             print(yellow, '\n Name:', green,
-                                                  DecryptionData(line_of_note["name_note"], key,
+                                                  enc_module_obs.DecryptionData(line_of_note["name_note"], key,
                                                                  master_password, lister_row), mc,
                                                   yellow, '\n Note:', green,
-                                                  DecryptionData(line_of_note["note"], key,
+                                                  enc_module_obs.DecryptionData(line_of_note["note"], key,
                                                                  master_password, lister_row), mc)
                             work()  # Рекурсия
                         work()  # Запуск
@@ -620,11 +522,11 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                             ClearTerminal()
                             ShowContent(key, master_password, lister_row)
                             print(yellow, '\n Resource:', green,
-                                  DecryptionData(line["resource"], key, master_password, lister_row), mc,
+                                  enc_module_obs.DecryptionData(line["resource"], key, master_password, lister_row), mc,
                                   yellow, '\n Login:   ', green,
-                                  DecryptionData(line["login"], key, master_password, lister_row), mc,
+                                  enc_module_obs.DecryptionData(line["login"], key, master_password, lister_row), mc,
                                   yellow, '\n Password:', green,
-                                  DecryptionData(line["password"], key, master_password, lister_row), mc)
+                                  enc_module_obs.DecryptionData(line["password"], key, master_password, lister_row), mc)
         except ValueError:
             ShowContent(key, master_password, lister_row)   # Показ содежимого
         DecryptionBlock(master_password, key, lister_row, resource, login)  # Рекусрия под-главной функции
@@ -648,13 +550,13 @@ def MainFun():
                      '\n                     этой программы                      ' + mc)
         master_password = ConfirmUserPass()     # Создание мастер-пароля
         hash_pas = open(file_hash_password, 'w')    # Открытие файла с хэшем
-        enc_pas = EncryptionByTwoLevels(master_password, master_password)   # Шифрование мастер-пароля
+        enc_pas = enc_module_obs.EncryptionByTwoLevels(master_password, master_password)   # Шифрование мастер-пароля
         hash_pas.write(enc_pas)     # Хэш записывается в файл
         hash_pas.close()    # Закрытие файла
         if check_file_lister == bool(False):    # Если файла со строкасм нет, то они генерируются
             MakingRows(master_password, main_symbols)
         print(GreatingDependingOnDateTime(master_password))     # Вывод приветствия
-        sleep(.7)
+        sleep(.5)
         key, lister_row, resource, login = DataForResource(master_password)     # Ввод данных для ресурса
         DecryptionBlock(master_password, key, lister_row, resource, login)  # Старт цикла
     else:
@@ -662,7 +564,7 @@ def MainFun():
         key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(None, True)
         ClearTerminal()
         print(GreatingDependingOnDateTime(master_password))
-        sleep(.7)
+        sleep(.5)
         ShowContent(key, master_password, lister_row)       # Показ содержимого файла с ресурсами
         DecryptionBlock(master_password, key, lister_row, None, None)  # Старт цикла
 
@@ -670,21 +572,31 @@ def MainFun():
 if __name__ == '__main__':
     try:  # Running a program through an exception
         ClearTerminal()
-        print(blue, '\n Password Manager v1.4.5.4 Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        print(blue, '\n Password Manager ' + version + ' Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
         if os.path.exists(main_folder + '.updates.dat') == bool(False):
             ClearTerminal()
             with open(main_folder + '.updates.dat', 'w') as updates:
-                updates.write('v1.4.5.4')
+                updates.write(version)
                 updates.close()
-            print(green + '\n\n - Latest update optimization program! - ' + mc)
-            sleep(3)
+        else:
+            with open(main_folder + '.updates.dat') as upd:
+                latest_version = upd.readline()
+            if version != latest_version:
+                with open(main_folder + '.updates.dat', 'w') as updates:
+                    updates.write(version)
+                    updates.close()
         MainFun()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
         sleep(1)
         ClearTerminal()
-        print(red + ' -- You can try to update the program -- ' + mc)
+        print(red + ' -- You can try to update the program -- \n' + mc)
         change = input(yellow + ' - Update? (y/n): ' + mc)
         if change == 'y':   # Если получает запрос от юзера
             UpdateProgram(None, None, None, None, None, False)
+        RestartProgram()
+    except ModuleNotFoundError:
+        os.system('git clone https://github.com/Berliner187/pwManager')
+        os.system('cp pwManager/enc_module_obs.py .')
+        os.system('rm -r pwManager/')
         RestartProgram()
