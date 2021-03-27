@@ -28,7 +28,7 @@ try:
 except ModuleNotFoundError:
     os.system('git clone https://github.com/Berliner187/pwManager')
     ClearTerminal()
-    os.system('cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module.py')
+    os.system('cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module_obs.py')
     os.system('rm -r pwManager/ -f')
     RestartProgram()
 
