@@ -21,7 +21,7 @@ z=1000
 w=J+".lister.dat"
 def S():
  O('cls'if k=='nt'else 'clear')
-def o(OO0OO000O0O0O0O0O,O0OO00O0OOOOOOO00):
+def CL(OO0OO000O0O0O0O0O,O0OO00O0OOOOOOO00):
  S()
  F(y+'Please, wait ...'+mc)
  global z
@@ -37,7 +37,7 @@ def o(OO0OO000O0O0O0O0O,O0OO00O0OOOOOOO00):
    E.write('\n')
    E.close()
  S()
-def Q(O0O00000OO00OOO0O,OOOOO0OOO0OO00OO0):
+def GL(O0O00000OO00OOO0O,OOOOO0OOO0OO00OO0):
  X=[]
  with i(w)as O00O0O0O0O000000O:
   c=0
@@ -50,7 +50,7 @@ def Q(O0O00000OO00OOO0O,OOOOO0OOO0OO00OO0):
  return X
 t=J+".keys.csv"
 A=b.exists(t)
-def V(O0OO0O00O0O0O0O00):
+def HH(O0OO0O00O0O0O0O00):
  global z
  if A==H(a):
   v=n(52)

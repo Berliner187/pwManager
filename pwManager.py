@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.5 Stable For Linux (SFL)
+# Password manager v1.4.5.6 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -23,14 +23,16 @@ def ClearTerminal():
 
 try:
     import enc_module_obs
+    import lister_module_obs
+    lister_module = lister_module_obs
 except ModuleNotFoundError:
     os.system('git clone https://github.com/Berliner187/pwManager')
     ClearTerminal()
-    os.system('cp pwManager/enc_module_obs.py .')
+    os.system('cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module.py')
     os.system('rm -r pwManager/ -f')
     RestartProgram()
 
-version = 'v1.4.5.5'
+version = 'v1.4.5.6'
 
 # Colours and effects
 yellow, blue, purple, green, mc, red, under_line = "\033[33m", "\033[36m", "\033[35m", \
@@ -41,17 +43,14 @@ main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789
 # Files for work program
 main_folder = 'files/'
 file_date_base = main_folder + "main_data.dat"     # Файл, в котором лежат пароли
-file_keys = main_folder + ".keys.csv"  # Файл с ключами
 file_lister = main_folder + ".lister.dat"   # Файл со строками в кол-ве 10000
 file_self_name = main_folder + ".self_name.dat"  # Файл с именем (никнеймом)
 file_hash_password = main_folder + '.hash_password.dat'     # Файл с хэшем пароля
 file_notes = main_folder + 'notes.csv'   # Файл с заметками
 
 check_file_date_base = os.path.exists(file_date_base)    # Проверка этого файла на наличие
-check_file_keys = os.path.exists(file_keys)     # Проверка на наличие
 check_file_lister = os.path.exists(file_lister)   # Проверка этого файла на наличие
-check_file_notes = os.path.exists(file_notes)
-gty_for_listers = 1000     # Число строк в файле listers
+check_file_notes = os.path.exists(file_notes)   # Проверка на наличие файла с заметками
 
 if os.path.exists(main_folder) == bool(False):
     os.mkdir(main_folder)
@@ -103,73 +102,6 @@ def GreatingDependingOnDateTime(master_password):
             return Time(name)
 
 
-def MakingRows(master_password, symbols):   # Зашифрованные строки
-    ClearTerminal()
-    print(yellow + 'Making files. Please, wait ...' + mc)
-    global gty_for_listers  # Число строк
-    for q in range(gty_for_listers):    # Генерируются строки в кол-ве указанных
-        symb = []   # Массив для символов
-        for j in symbols:   # Перебор по всем символам
-            symb.append(j)  # Добавление в массив
-        random.shuffle(symb)    # Перемешивание
-        string = ''.join(symb)  # Добавление символов в строку
-        # Шифрование строки
-        total = enc_module_obs.EncryptionByTwoLevels(string, master_password)
-        # Recording data to file
-        with open(file_lister, "a") as lister:  # Opening a file as "file"
-            lister.write(total)  # Recording an encrypted message
-            lister.write('\n')  # Line break
-            lister.close()  # Closing the file to save data
-    ClearTerminal()
-
-
-def AppendInListerFromFile(additional_key, master_password):
-    """ Добавление нужной строки из файла в список для дальнейшего использования """
-    lister_for_return = []  # Пустой список
-    with open(file_lister) as file:  # Файл с рандомными
-        s = 0  # Счетчик (по умолчанию 0)
-        for row in file:  # Перебор по строкам файла
-            s += 1  # Счетчик увеличивается на 1
-            if s == additional_key:  # Если значение счетчика равно дополнительному ключу
-                # Дешифровка нужной строки
-                total = enc_module_obs.DecryptionByTwoLevels(row, master_password)
-                for syb in total:  # Перебор строки посимвольно
-                    lister_for_return.append(syb)  # Добавление символов в ранее пустой список
-    return lister_for_return
-
-
-def getUniqueSewnKey(master_password):
-    """ Make unique key """
-    global gty_for_listers
-    if check_file_keys == bool(False):
-        key = random.randrange(52)  # Случайный выбор числа
-        additional_key = random.randrange(gty_for_listers)  # Выбор случайного числа из массива
-        # Шифрование ключей
-        crypto_key = enc_module_obs.EncryptionByTwoLevels(key, master_password)
-        crypto_additional_key = enc_module_obs.EncryptionByTwoLevels(additional_key, master_password)
-        key, additional_key = str(key), str(additional_key)
-        with open(file_keys, mode="w", encoding='utf-8') as data:
-            writer = DictWriter(data, fieldnames=['key', 'additional_key'])
-            if check_file_keys == bool(False):
-                writer.writeheader()  # Создание столбцов
-            # Запись в файл
-            writer.writerow({
-                'key': crypto_key,
-                'additional_key': crypto_additional_key})
-            return str(key), str(additional_key)
-    else:
-        # Чтение ключей из файла
-        with open(file_keys, encoding='utf-8') as profiles:
-            reader = DictReader(profiles, delimiter=',')
-            for row in reader:
-                key = row["key"]
-                additional_key = row["additional_key"]
-            # Дешифровка ключей
-            decryption_key = enc_module_obs.DecryptionByTwoLevels(key, master_password)
-            decryption_additional_key = enc_module_obs.DecryptionByTwoLevels(additional_key, master_password)
-            return str(decryption_key), str(decryption_additional_key)
-
-
 def SaveDataToFile(resource, login, password, key, lister, master_password):
     """ Шифрование логина и пароля. Сохранение в csv-файл """
     with open(file_date_base, mode="a", encoding='utf-8') as data:
@@ -210,6 +142,7 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
     def DoForNewGeneratedPassword(resource, login, password, key, lister, master_password):
         SaveDataToFile(resource, login, password, key, lister, master_password)
         print('  Your new password - ' + green + password + mc + ' - success saved')
+
     def GenerationPassword(length):
         """ Генерирование нового случайного пароля """
         pas_gen = ''  # Empty password
@@ -276,11 +209,11 @@ def ShowContent(key, master_password, lister):
 def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
     """ Получение мастер-пароля и доп. ключей """
     def GetKeys():
-        key, additional_key = getUniqueSewnKey(master_password)  # Получение новых ключей
+        key, additional_key = lister_module.HH(master_password)  # Получение новых ключей
         return int(key), int(additional_key)
     if check_file_date_base == bool(False):
         key, additional_key = GetKeys()
-        lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
+        lister_row = lister_module.GL(additional_key, master_password)  # Change row encryption
         return key, lister_row, master_password
     else:
         if status == bool(True):    # Если аргумент status истинен, то идет запрос пароля
@@ -291,15 +224,13 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
             enc_pas_from_file = ''
             for hash_pas in master_password_from_file.readlines():
                 enc_pas_from_file = hash_pas
-            if enc_pas == enc_pas_from_file:
-                pass
-            else:
+            if enc_pas != enc_pas_from_file:
                 print(red + '\n --- Wrong password --- ' + mc)
-                sleep(1.4)
+                sleep(1)
                 ClearTerminal()
                 MainFun()
         key, additional_key = GetKeys()  # Получение ключей
-        lister_row = AppendInListerFromFile(additional_key, master_password)  # Change row encryption
+        lister_row = lister_module.GL(additional_key, master_password)  # Change row encryption
         return key, lister_row, master_password
 
 
@@ -421,8 +352,9 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                 for name in reader_notes:
                                     number_note += 1
                                     dec_name_note = enc_module_obs.DecryptionData(name["name_note"], key,
-                                                                   master_password, lister_row)
-                                    print(str(number_note) + '.', dec_name_note)   # Вывод названий заметок и их порядкового номера
+                                                                                  master_password, lister_row)
+                                    # Вывод названий заметок и их порядкового номера
+                                    print(str(number_note) + '.', dec_name_note)
                                 print(blue + '\n  - Press "Enter" to go back'
                                              '\n  - Enter "-a" to add new note'
                                              '\n  - Enter "-d" to remove note',
@@ -563,7 +495,7 @@ def MainFun():
         hash_pas.write(enc_pas)     # Хэш записывается в файл
         hash_pas.close()    # Закрытие файла
         if check_file_lister == bool(False):    # Если файла со строкасм нет, то они генерируются
-            MakingRows(master_password, main_symbols)
+            lister_module.CL(master_password, main_symbols)
         print(GreatingDependingOnDateTime(master_password))     # Вывод приветствия
         sleep(.5)
         key, lister_row, resource, login = DataForResource(master_password)     # Ввод данных для ресурса
