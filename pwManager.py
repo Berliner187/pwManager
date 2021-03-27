@@ -9,9 +9,11 @@ import datetime
 from time import sleep
 from getpass import getpass
 from shutil import copyfile
-import enc_module_obs
 
-version = 'v1.4.5.5'
+
+def RestartProgram():
+    """ Restart Program """
+    os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
 def ClearTerminal():
@@ -19,10 +21,15 @@ def ClearTerminal():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def RestartProgram():
-    """ Restart Program """
-    os.execv(sys.executable, [sys.executable] + sys.argv)
+try:
+    import enc_module_obs
+except ModuleNotFoundError:
+    os.system('git clone https://github.com/Berliner187/pwManager')
+    os.system('cp pwManager/enc_module_obs.py .')
+    os.system('rm -r pwManager/')
+    RestartProgram()
 
+version = 'v1.4.5.5'
 
 # Colours and effects
 yellow, blue, purple, green, mc, red, under_line = "\033[33m", "\033[36m", "\033[35m", \
@@ -594,9 +601,4 @@ if __name__ == '__main__':
         change = input(yellow + ' - Update? (y/n): ' + mc)
         if change == 'y':   # Если получает запрос от юзера
             UpdateProgram(None, None, None, None, None, False)
-        RestartProgram()
-    except ModuleNotFoundError:
-        os.system('git clone https://github.com/Berliner187/pwManager')
-        os.system('cp pwManager/enc_module_obs.py .')
-        os.system('rm -r pwManager/')
         RestartProgram()
