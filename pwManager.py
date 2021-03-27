@@ -28,22 +28,21 @@ try:
 except ModuleNotFoundError:
     os.system('git clone https://github.com/Berliner187/pwManager')
     ClearTerminal()
-    os.system('cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module_obs.py')
+    os.system('cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module_obs.py .')
     os.system('rm -r pwManager/ -f')
     RestartProgram()
 
 version = 'v1.4.5.6'
 
 # Colours and effects
-yellow, blue, purple, green, mc, red, under_line = "\033[33m", "\033[36m", "\033[35m", \
-                                       "\033[32m", "\033[0m", "\033[31m", "\033[4m"
+yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
 # Files for work program
 main_folder = 'files/'
 file_date_base = main_folder + "main_data.dat"     # Файл, в котором лежат пароли
-file_lister = main_folder + ".lister.dat"   # Файл со строками в кол-ве 10000
+file_lister = main_folder + ".lister.dat"   # Файл со строками
 file_self_name = main_folder + ".self_name.dat"  # Файл с именем (никнеймом)
 file_hash_password = main_folder + '.hash_password.dat'     # Файл с хэшем пароля
 file_notes = main_folder + 'notes.csv'   # Файл с заметками
