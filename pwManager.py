@@ -21,21 +21,25 @@ def ClearTerminal():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
+# Colours
+yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
+
 try:
     import enc_module_obs
     import lister_module_obs
     lister_module = lister_module_obs
 except ModuleNotFoundError:
+    print(red + ' - Module missing - ' + mc)
+    sleep(1)
+    ClearTerminal()
     os.system('git clone https://github.com/Berliner187/pwManager')
     ClearTerminal()
-    os.system('cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module_obs.py .')
+    os.system('cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module_obs.py . ; '
+              'cp pwManager/pwManager.py .')
     os.system('rm -r pwManager/ -f')
     RestartProgram()
 
 version = 'v1.4.5.6'
-
-# Colours and effects
-yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
