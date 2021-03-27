@@ -409,7 +409,9 @@ def UpdateProgram(master_password, key, lister_row, resource, login, status):
     main_file = 'pwManager.py'
     os.system('git clone https://github.com/Berliner187/pwManager')
     if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
-        install_or_no = input(yellow + ' - Install? (y/n): ' + mc)
+        ClearTerminal()
+        print(red + ' -- НОВАЯ ВЕРСИЯ НЕ БУДЕТ СОВМЕСТИМА С ТЕКУЩЕЙ! -- ')
+        install_or_no = input(yellow + ' - Установить? (y/n): ' + mc)
         if install_or_no == 'y':
             os.system('cp pwManager/' + main_file + ' . ; rm -r pwManager/ -f')
             ClearTerminal()
