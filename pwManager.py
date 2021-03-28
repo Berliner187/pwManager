@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.6 Stable For Linux (SFL)
+# Password manager v1.4.5.7 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -7,7 +7,6 @@ from csv import DictReader, DictWriter
 import random
 import datetime
 from time import sleep
-from getpass import getpass
 from shutil import copyfile
 
 
@@ -24,22 +23,7 @@ def ClearTerminal():
 # Colours
 yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
 
-try:
-    import enc_module_obs
-    import lister_module_obs
-    lister_module = lister_module_obs
-except ModuleNotFoundError:
-    print(red + ' - Module missing - ' + mc)
-    sleep(1)
-    ClearTerminal()
-    os.system('git clone https://github.com/Berliner187/pwManager')
-    ClearTerminal()
-    os.system('cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module_obs.py . ; '
-              'cp pwManager/pwManager.py .')
-    os.system('rm -r pwManager/ -f')
-    RestartProgram()
-
-version = 'v1.4.5.6'
+version = 'v1.4.5.7'
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
@@ -111,7 +95,7 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
         writer = DictWriter(data, fieldnames=['resource', 'login', 'password'])
         if check_file_date_base == bool(False):
             writer.writeheader()    # Запись заголовков
-        # Шифрование ресурсов
+        # Шифрование данных ресурса
         crypto_res = enc_module_obs.EncryptionData(resource, key, master_password, lister)
         crypto_log = enc_module_obs.EncryptionData(login, key, master_password, lister)
         crypto_pas = enc_module_obs.EncryptionData(password, key, master_password, lister)
@@ -124,8 +108,8 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
 def ConfirmUserPass():
     """ Подтвержение пользовательского пароля """
     def UserInput():
-        user_password = getpass(' Password: ')
-        user_confirm_password = getpass(' Confirm password: ')
+        user_password = stdiomask.getpass(' Password: ')
+        user_confirm_password = stdiomask.getpass(' Confirm password: ')
         return user_password, user_confirm_password
     print(blue + '\n Minimum password length 8 characters' + mc)
     password, confirm_password = UserInput()
@@ -172,7 +156,7 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
         SaveDataToFile(resource, login, password, key, lister, master_password)
         print(green + '\n  - Your password successfully saved! -  ' + mc)
         sleep(1)
-    else:
+    else:   # Если ошибка выбора
         print(red + '  -- Error of change. Please, change again --  ' + mc)
         sleep(1)
         ChangeTypeOfPass(resource, login, key, master_password, lister)
@@ -206,7 +190,7 @@ def ShowContent(key, master_password, lister):
               '\n  - Enter "-z" to remove ALL data', green,
               '\n  - Coming soon new version!', red,
               '\n  - It will not be compatible with the current',
-              yellow, '\n Select resource by number', mc)
+              yellow, '\n Select resource by number \n', mc)
 
 
 def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
@@ -220,7 +204,7 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
         return key, lister_row, master_password
     else:
         if status == bool(True):    # Если аргумент status истинен, то идет запрос пароля
-            master_password = getpass(yellow + ' -- Your master-password: ' + mc)
+            master_password = stdiomask.getpass(yellow + ' -- Your master-password: ' + mc)
             # Проверка хэша пароля
             enc_pas = enc_module_obs.EncryptionByTwoLevels(master_password, master_password)
             master_password_from_file = open(file_hash_password)
@@ -465,12 +449,13 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                         if s == int(change_resource_or_actions):
                             ClearTerminal()
                             ShowContent(key, master_password, lister_row)
-                            print(yellow, '\n Resource:', green,
-                                  enc_module_obs.DecryptionData(line["resource"], key, master_password, lister_row), mc,
-                                  yellow, '\n Login:   ', green,
-                                  enc_module_obs.DecryptionData(line["login"], key, master_password, lister_row), mc,
-                                  yellow, '\n Password:', green,
-                                  enc_module_obs.DecryptionData(line["password"], key, master_password, lister_row), mc)
+
+                            def ResourceTemplate(type, value):  # Шаблон вывода данных о ресурсе
+                                print(yellow, type + ':', green,
+                                      enc_module_obs.DecryptionData(line[value], key, master_password, lister_row), mc)
+                            ResourceTemplate('Resource', 'resource')
+                            ResourceTemplate('Login   ', 'login')
+                            ResourceTemplate('Password', 'password')
         except ValueError:
             ShowContent(key, master_password, lister_row)   # Показ содежимого
         DecryptionBlock(master_password, key, lister_row, resource, login)  # Рекусрия под-главной функции
@@ -515,21 +500,37 @@ def MainFun():
 
 if __name__ == '__main__':
     try:  # Running a program through an exception
+        import enc_module_obs
+        import lister_module_obs
+        import stdiomask
+
+        lister_module = lister_module_obs
         ClearTerminal()
-        print(blue, '\n Password Manager ' + version + ' Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
-        if os.path.exists(main_folder + '.updates.dat') == bool(False):
-            ClearTerminal()
-            with open(main_folder + '.updates.dat', 'w') as updates:
+        print(blue, '\n Password Manager', version, 'Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
+        file_version = main_folder + '.version'
+        if os.path.exists(file_version) == bool(False):
+            with open(file_version, 'w') as updates:
                 updates.write(version)
                 updates.close()
         else:
-            with open(main_folder + '.updates.dat') as upd:
+            with open(file_version) as upd:
                 latest_version = upd.readline()
             if version != latest_version:
-                with open(main_folder + '.updates.dat', 'w') as updates:
+                with open(file_version, 'w') as updates:
                     updates.write(version)
                     updates.close()
         MainFun()
+    except ModuleNotFoundError:
+        print(red + ' - Module missing - ' + mc)
+        sleep(1)
+        ClearTerminal()
+        os.system('git clone https://github.com/Berliner187/pwManager')
+        ClearTerminal()
+        os.system('pip install stdiomask')
+        os.system(
+            'cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module_obs.py . ; cp pwManager/pwManager.py .')
+        os.system('rm -r pwManager/ -f')
+        RestartProgram()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
         sleep(1)
