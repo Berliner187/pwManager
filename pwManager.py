@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.7 Stable For Linux (SFL)
+# Password manager v1.4.5.8 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -23,7 +23,7 @@ def ClearTerminal():
 # Colours
 yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
 
-version = 'v1.4.5.7'
+version = 'v1.4.5.8'
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
@@ -187,9 +187,7 @@ def ShowContent(key, master_password, lister):
               '\n  - Enter "-d" to remove resource'
               '\n  - Enter "-u" to update program'
               '\n  - Enter "-n" to go to notes'
-              '\n  - Enter "-z" to remove ALL data', green,
-              '\n  - Coming soon new version!', red,
-              '\n  - It will not be compatible with the current',
+              '\n  - Enter "-z" to remove ALL data',
               yellow, '\n Select resource by number \n', mc)
 
 
@@ -521,7 +519,7 @@ if __name__ == '__main__':
                     updates.close()
         MainFun()
     except ModuleNotFoundError:
-        print(red + ' - Module missing - ' + mc)
+        print(red + ' - Module missing, install... - ' + mc)
         sleep(1)
         ClearTerminal()
         os.system('git clone https://github.com/Berliner187/pwManager')
