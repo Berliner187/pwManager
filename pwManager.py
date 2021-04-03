@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.8 Stable For Linux (SFL)
+# Password manager v1.4.5.9 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -23,7 +23,7 @@ def ClearTerminal():
 # Colours
 yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
 
-version = 'v1.4.5.8'
+version = 'v1.4.5.9'
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
@@ -258,6 +258,12 @@ def UpdateProgram(master_password, key, lister_row, resource, login, status):
         sleep(.7)
 
 
+if check_file_notes == bool(False):     # Создание файла с заметками
+    with open(file_notes, mode="a", encoding='utf-8') as file_for_notes:
+        open_note = DictWriter(file_for_notes, fieldnames=['name_note', 'note'])
+        open_note.writeheader()
+
+
 def DecryptionBlock(master_password, key, lister_row, resource, login):
     """ Show resources and decrypt them with keys """
     def AddResourceData(resource, login, key, master_password, lister_row):
@@ -328,28 +334,26 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
             elif change_resource_or_actions == '-n':    # Добавление зашифрованных заметок
                 ClearTerminal()
                 while True:     # Старт цикла для работы с заметками
-                    if check_file_notes == bool(True):  # Если файл с заметками уже есть
-                        def show():     # Показ сохраненных заметок
-                            with open(file_notes, encoding='utf-8') as notes:
-                                reader_notes = DictReader(notes, delimiter=',')
-                                print(yellow + '       ---  Saved notes --- ', '\n' * 3 + mc)
-                                number_note = 0     # Номер заметки
-                                for name in reader_notes:
-                                    number_note += 1
-                                    dec_name_note = enc_module_obs.DecryptionData(name["name_note"], key,
-                                                                                  master_password, lister_row)
-                                    # Вывод названий заметок и их порядкового номера
-                                    print(str(number_note) + '.', dec_name_note)
-                                print(blue + '\n  - Press "Enter" to go back'
-                                             '\n  - Enter "-a" to add new note'
-                                             '\n  - Enter "-d" to remove note',
-                                      yellow, '\n Select note by number', mc)
-                        show()
+                    def show():     # Показ сохраненных заметок
+                        with open(file_notes, encoding='utf-8') as notes:
+                            reader_notes = DictReader(notes, delimiter=',')
+                            print(yellow + '       ---  Saved notes --- ', '\n' * 3 + mc)
+                            number_note = 0     # Номер заметки
+                            for name in reader_notes:   # Перебор названий заметок
+                                number_note += 1
+                                dec_name_note = enc_module_obs.DecryptionData(name["name_note"], key,
+                                                                              master_password, lister_row)
+                                # Вывод названий заметок и их порядкового номера
+                                print(str(number_note) + '.', dec_name_note)
+                            print(blue + '\n  - Press "Enter" to go back'
+                                         '\n  - Enter "-a" to add new note'
+                                         '\n  - Enter "-d" to remove note',
+                                  yellow, '\n Select note by number', mc)
+                    show()
 
                     def add_new():  # Добавление новой заметки
                         ClearTerminal()
                         print(blue + '    ---  Add new note  --- \n\n')
-                        os.system('touch ' + main_folder + 'notes.csv')
                         with open(file_notes, mode="a", encoding='utf-8') as data_note:
                             writer_note_add = DictWriter(data_note, fieldnames=['name_note', 'note'])
                             name_note = input(yellow + ' - Note name: ' + mc)
@@ -361,73 +365,62 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                                 'note': enc_note})
                         print(green, '   -- Success saved! --')
                         sleep(.3)
-                        if check_file_notes == bool(False):
-                            RestartProgram()
-                        else:
+                        ClearTerminal()
+                        show()
+
+                    def work():     # Работа в лейбле с заметками
+                        change_action = input('\n - Change: ')  # Выбор между действиями
+                        if change_action == '-a':   # Пользователь выбирает добавление новой заметки
+                            add_new()
+                        elif change_action == '-d':  # Пользователь выбирает удаление старой заметки
+                            print(blue + '\n -- Change by number note -- ' + mc)
+                            change_note_by_num = int(input(yellow + ' - Note number: ' + mc))   # Выбор цифрой
+                            # Выгрузка старого
+                            with open(file_notes, encoding='utf-8') as saved_note:
+                                read_note = DictReader(saved_note, delimiter=',')
+                                mas_name_note_rm, mas_note_rm = [], []
+                                cnt_note = 0
+                                for row_note in read_note:
+                                    cnt_note += 1
+                                    if cnt_note == change_note_by_num:
+                                        cnt_note += 1
+                                    else:  # Нужные ресурсы добавляются в массивы
+                                        mas_name_note_rm.append(row_note["name_note"])
+                                        mas_note_rm.append(row_note["note"])
+                                saved_note.close()
+                            # Перенос в новый файл
+                            new_file_notes = 'new_note.dat'
+                            with open(new_file_notes, mode="a", encoding='utf-8') as new_notes:
+                                write_note = DictWriter(new_notes, fieldnames=['name_note', 'note'])
+                                write_note.writeheader()
+                                for j in range(cnt_note-2):
+                                    write_note.writerow({
+                                        'name_note': mas_name_note_rm[j],
+                                        'note': mas_note_rm[j]})
+                                new_notes.close()
+                            # Замена старого файла на актуальный
+                            copyfile(new_file_notes, file_notes)  # Старый записывается новым файлом
+                            os.system('rm ' + new_file_notes)  # Удаление нового файла
                             ClearTerminal()
                             show()
-
-                    if check_file_notes == bool(False):
-                        with open(file_notes, mode="a", encoding='utf-8') as data:
-                            open_note = DictWriter(data, fieldnames=['name_note', 'note'])
-                            open_note.writeheader()
-                        add_new()
-                        RestartProgram()
-                    else:
-
-                        def work():     # Работа в лейбле с заметками
-                            change_action = input('\n - Change: ')  # Выбор между действиями
-                            if change_action == '-a':   # Пользователь выбирает добавление новой заметки
-                                add_new()
-                            elif change_action == '-d': # Пользователь выбирает удаление старой заметки
-                                print(blue + '\n -- Change by number note -- ' + mc)
-                                change_note_by_num = int(input(yellow + ' - Note number: ' + mc))   # Выбор цифрой
-                                # Выгрузка старого
-                                with open(file_notes, encoding='utf-8') as saved_note:
-                                    read_note = DictReader(saved_note, delimiter=',')
-                                    mas_name_note_rm, mas_note_rm = [], []
-                                    cnt_note = 0
-                                    for row_note in read_note:
-                                        cnt_note += 1
-                                        if cnt_note == change_note_by_num:
-                                            cnt_note += 1
-                                        else:  # Нужные ресурсы добавляются в массивы
-                                            mas_name_note_rm.append(row_note["name_note"])
-                                            mas_note_rm.append(row_note["note"])
-                                    saved_note.close()
-                                # Перенос в новый файл
-                                new_file_notes = 'new_note.dat'
-                                with open(new_file_notes, mode="a", encoding='utf-8') as new_notes:
-                                    write_note = DictWriter(new_notes, fieldnames=['name_note', 'note'])
-                                    write_note.writeheader()
-                                    for j in range(cnt_note-2):
-                                        write_note.writerow({
-                                            'name_note': mas_name_note_rm[j],
-                                            'note': mas_note_rm[j]})
-                                    new_notes.close()
-                                # Замена старого файла на актуальный
-                                copyfile(new_file_notes, file_notes)  # Старый записывается новым файлом
-                                os.system('rm ' + new_file_notes)  # Удаление нового файла
-                                ClearTerminal()
-                                show()
-                            else:   # Вывод дешифрованных данных по выбранной цифре
-                                with open(file_notes, encoding='utf-8') as saved_note:  # Открытие в csv-формате
-                                    read_note = DictReader(saved_note, delimiter=',')   # Чтение библиоткой csv
-                                    count = 0   # Счетчик
-                                    for line_of_note in read_note:
-                                        count += 1
-                                        if count == int(change_action):  # Если счетчик совпадает с выбранным значением
-                                            ClearTerminal()
-                                            show()  # Показываются сохраненные имена заметок
-                                            # Выводится зашифрованный вид выбранной заметки
-                                            print(yellow, '\n Name:', green,
-                                                  enc_module_obs.DecryptionData(line_of_note["name_note"], key,
-                                                                 master_password, lister_row), mc,
-                                                  yellow, '\n Note:', green,
-                                                  enc_module_obs.DecryptionData(line_of_note["note"], key,
-                                                                 master_password, lister_row), mc)
-                            work()  # Рекурсия
-                        work()  # Запуск
+                        else:   # Вывод дешифрованных данных по выбранной цифре
+                            with open(file_notes, encoding='utf-8') as saved_note:  # Открытие в csv-формате
+                                read_note = DictReader(saved_note, delimiter=',')   # Чтение библиоткой csv
+                                count = 0   # Счетчик
+                                for line_of_note in read_note:
+                                    count += 1
+                                    if count == int(change_action):  # Если счетчик совпадает с выбранным значением
+                                        ClearTerminal()
+                                        show()  # Показываются сохраненные имена заметок
+                                        # Выводится зашифрованный вид выбранной заметки
+                                        print(yellow, '\n Name:', green,
+                                              enc_module_obs.DecryptionData(line_of_note["name_note"], key,
+                                                             master_password, lister_row), mc,
+                                              yellow, '\n Note:', green,
+                                              enc_module_obs.DecryptionData(line_of_note["note"], key,
+                                                             master_password, lister_row), mc)
+                        work()  # Рекурсия
+                    work()  # Запуск
             elif change_resource_or_actions == '-z':    # Удаление всех данных пользователя
                 ClearTerminal()
                 print(red + '\n\n - Are you sure you want to delete all data? - ' + mc)
