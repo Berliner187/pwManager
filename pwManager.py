@@ -518,7 +518,10 @@ if __name__ == '__main__':
         os.system('git clone https://github.com/Berliner187/pwManager')
         ClearTerminal()
         os.system(
-            'cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module_obs.py . ; cp pwManager/pwManager.py .')
+            'cp pwManager/enc_module_obs.py . ; '
+            'cp pwManager/lister_module_obs.py . ; '
+            'cp pwManager/pwManager.py .'
+            'cp pwManager/stars_module.py .')
         os.system('rm -r pwManager/ -f')
         RestartProgram()
     except ValueError:  # With this error (not entered value), the program is restarted
