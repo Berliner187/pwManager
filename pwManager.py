@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.9 Stable For Linux (SFL)
+# Password manager v1.4.5.10 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -23,7 +23,7 @@ def ClearTerminal():
 # Colours
 yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
 
-version = 'v1.4.5.9'
+version = 'v1.4.5.10'    # Version program
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
@@ -108,8 +108,8 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
 def ConfirmUserPass():
     """ Подтвержение пользовательского пароля """
     def UserInput():
-        user_password = stdiomask.getpass(' Password: ')
-        user_confirm_password = stdiomask.getpass(' Confirm password: ')
+        user_password = stars_module.mask_password(' Password: ')
+        user_confirm_password = stars_module.mask_password(' Confirm password: ')
         return user_password, user_confirm_password
     print(blue + '\n Minimum password length 8 characters' + mc)
     password, confirm_password = UserInput()
@@ -202,7 +202,7 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
         return key, lister_row, master_password
     else:
         if status == bool(True):    # Если аргумент status истинен, то идет запрос пароля
-            master_password = stdiomask.getpass(yellow + ' -- Your master-password: ' + mc)
+            master_password = stars_module.mask_password(yellow + ' -- Your master-password: ' + mc)
             # Проверка хэша пароля
             enc_pas = enc_module_obs.EncryptionByTwoLevels(master_password, master_password)
             master_password_from_file = open(file_hash_password)
@@ -493,7 +493,7 @@ if __name__ == '__main__':
     try:  # Running a program through an exception
         import enc_module_obs
         import lister_module_obs
-        import stdiomask
+        import stars_module
 
         lister_module = lister_module_obs
         ClearTerminal()
@@ -517,7 +517,6 @@ if __name__ == '__main__':
         ClearTerminal()
         os.system('git clone https://github.com/Berliner187/pwManager')
         ClearTerminal()
-        os.system('pip install stdiomask')
         os.system(
             'cp pwManager/enc_module_obs.py . ; cp pwManager/lister_module_obs.py . ; cp pwManager/pwManager.py .')
         os.system('rm -r pwManager/ -f')
