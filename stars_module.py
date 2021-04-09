@@ -1,12 +1,6 @@
 import sys
-
-STR_TYPE = str # type: type
-RUNNING_PYTHON_2 = sys.version_info[0] == 2  # type: bool
-if RUNNING_PYTHON_2:
-    STR_TYPE = unicode # Ignore the pyflakes warning on this line.
-
-
-import tty, termios
+import tty
+import termios
 
 
 def getch():
@@ -29,10 +23,10 @@ def mask_password(prompt, mask='*'):
         if key == 13:
             sys.stdout.write('\n')
             return ''.join(entered_password)
-        elif key in (8, 127): # Backspace/Del key erases previous output.
+        elif key in (8, 127):  # Backspace/Del key erases previous output.
             if len(entered_password) > 0:
                 # Erases previous character.
-                sys.stdout.write('\b \b') # \b doesn't erase the character, it just moves the cursor back.
+                sys.stdout.write('\b \b')  # \b doesn't erase the character, it just moves the cursor back.
                 sys.stdout.flush()
                 entered_password = entered_password[:-1]
         elif 0 <= key <= 31:
