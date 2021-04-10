@@ -512,17 +512,15 @@ if __name__ == '__main__':
                     updates.close()
         MainFun()
     except ModuleNotFoundError:
-        print(red + ' - Module missing, install... - ' + mc)
-        sleep(1)
-        ClearTerminal()
+        print(red + ' - Installing the missing module - ' + mc)
         os.system('git clone https://github.com/Berliner187/pwManager')
         ClearTerminal()
         os.system(
             'cp pwManager/enc_module_obs.py . ; '
             'cp pwManager/lister_module_obs.py . ; '
-            'cp pwManager/pwManager.py .'
-            'cp pwManager/stars_module.py .')
-        os.system('rm -r pwManager/ -f')
+            'cp pwManager/pwManager.py . ; '
+            'cp pwManager/stars_module.py . ; '
+            'rm -r pwManager/ -f')
         RestartProgram()
     except ValueError:  # With this error (not entered value), the program is restarted
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
