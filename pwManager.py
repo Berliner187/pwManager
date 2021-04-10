@@ -512,7 +512,7 @@ if __name__ == '__main__':
                     updates.close()
         MainFun()
     except ModuleNotFoundError:
-        print(red + ' - Installing the missing module - ' + mc)
+        print(green + ' - Installing the missing module - ' + mc)
         os.system('git clone https://github.com/Berliner187/pwManager')
         ClearTerminal()
         os.system(
