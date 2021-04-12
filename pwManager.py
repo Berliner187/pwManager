@@ -510,6 +510,41 @@ def MainFun():
         DecryptionBlock(master_password, key, lister_row, None, None)  # Старт цикла
 
 
+log_fields = ['version', 'datetime_install', 'installed_modules', 'status']     # Столбцы файла с логами
+file_version = main_folder + '.version.log'  # Файл с версией программы
+
+
+def WriteVersionToFile(status):   # Функция записи в файл версии
+    global file_version
+    with open(file_version, mode="a", encoding='utf-8') as log_data:
+        log_writer = DictWriter(log_data, fieldnames=log_fields, delimiter=';')
+
+        def GetDateTime():      # Получение и форматирование текущего времени
+            hms = datetime.datetime.today()  # Дата и время
+            day, month, year = hms.day, hms.month, hms.year     # Число, месяц, год
+            hour = hms.hour  # Формат часов
+            minute = hms.minute  # Формат минут
+            second = hms.second  # Формат секунд
+            time_format = str(hour) + ':' + str(minute) + ':' + str(second)
+            date_format = day, month, year
+            return time_format, date_format
+
+        def GetInstalledModules():
+            file_type = '.py'
+            any_file = os.listdir('.')
+            modules = []
+            for file in any_file:
+                if file.endswith(file_type):
+                    modules.append(file)
+            return modules
+
+        log_writer.writerow({
+            'version': version,     # Запись версии
+            'datetime_install': GetDateTime(),     # Запись даты и времени
+            'installed_modules': GetInstalledModules(),
+            'status': status})
+
+
 if __name__ == '__main__':
     try:  # Running a program through an exception
         import enc_module_obs
@@ -519,63 +554,33 @@ if __name__ == '__main__':
         lister_module = lister_module_obs
         ClearTerminal()
         print(blue, '\n Password Manager', version, 'Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
-        file_version = main_folder + '.version.log'     # Файл с версией программы
-
-        def WriteVersionToFile():   # Функция записи в файл версии
-            global file_version
-            with open(file_version, mode="a", encoding='utf-8') as data:
-                log_writer = DictWriter(data, fieldnames=['version', 'datetime_install', 'installed_modules'])
-                if os.path.exists(file_version) == bool(False):
-                    log_writer.writeheader()  # Запись заголовков
-
-                def GetDateTime():      # Получение и форматирование текущего времени
-                    hms = datetime.datetime.today()  # Дата и время
-                    day, month, year = hms.day, hms.month, hms.year     # Число, месяц, год
-                    hour = hms.hour  # Формат часов
-                    minute = hms.minute  # Формат минут
-                    second = hms.second  # Формат секунд
-                    time_format = str(hour) + ':' + str(minute) + ':' + str(second)
-                    date_format = day, month, year
-                    return time_format, date_format
-
-                def GetInstalledModules():
-                    file_type = '.py'
-                    any_file = os.listdir('.')
-                    modules = []
-                    for file in any_file:
-                        if file.endswith(file_type):
-                            modules.append(file)
-                    return modules
-
-                log_writer.writerow({
-                    'version': version,     # Запись версии
-                    'datetime_install': GetDateTime(),     # Запись даты и времени
-                    'installed_modules': GetInstalledModules()})
 
         if os.path.exists(file_version) == bool(False):     # Создание, если его нет
-            WriteVersionToFile()    # Запись версии в файл
+            with open(file_version, mode="a", encoding='utf-8') as data:
+                logg_writer = DictWriter(data, fieldnames=log_fields, delimiter=';')
+                logg_writer.writeheader()  # Запись заголовков
+            WriteVersionToFile('OK')    # Запись версии в файл
         else:
-            with open(file_version) as updates:
-                if version != updates.readline():   # Если не совпадают, перезаписывается актуальной версией
-                    WriteVersionToFile()   # Запись версии в файл
+            with open(file_version, encoding='utf-8') as version_from_file:
+                log_reader = DictReader(version_from_file, delimiter=';')
+                last_v = ''
+                for last_version in log_reader:
+                    if version != last_version["version"]:   # Если не совпадают, перезаписывается актуальной версией
+                        WriteVersionToFile('Update')   # Запись версии в файл
         MainFun()
     except ModuleNotFoundError:
+        WriteVersionToFile('ModuleNotFoundError')
         print(green + ' - Installing the missing module - ' + mc)
-        os.system('git clone https://github.com/Berliner187/pwManager')
-        ClearTerminal()
-        os.system(
-            'cp pwManager/enc_module_obs.py . ; '
-            'cp pwManager/lister_module_obs.py . ; '
-            'cp pwManager/pwManager.py . ; '
-            'cp pwManager/stars_module.py . ; '
-            'rm -r pwManager/ -f')
+        sleep(1)
+        UpdateProgram(None, None, None, None, None, False)
         RestartProgram()
     except ValueError:  # With this error (not entered value), the program is restarted
+        WriteVersionToFile('ValueError')
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
         sleep(1)
         ClearTerminal()
         print(red + ' -- You can try to update the program -- \n' + mc)
         change = input(yellow + ' - Update? (y/n): ' + mc)
         if change == 'y':   # Если получает запрос от юзера
-            UpdateProgram(None, None, None, None, None, False)
+            UpdateProgram(None, None, None, None, None, True)
         RestartProgram()
