@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.12 Stable For Linux (SFL)
+# Password manager v1.4.5.13 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -23,7 +23,7 @@ def ClearTerminal():
 # Colours
 yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
 
-version = 'v1.4.5.12'    # Version program
+version = 'v1.4.5.13'    # Version program
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
@@ -530,7 +530,7 @@ def WriteVersionToFile(status):   # Функция записи в файл ве
             return time_format, date_format
 
         def GetInstalledModules():
-            file_type = '.py'
+            file_type = 'obs.py'
             any_file = os.listdir('.')
             modules = []
             for file in any_file:
@@ -541,7 +541,7 @@ def WriteVersionToFile(status):   # Функция записи в файл ве
         log_writer.writerow({
             'version': version,     # Запись версии
             'datetime_install': GetDateTime(),     # Запись даты и времени
-            'installed_modules': GetInstalledModules(),
+            'installed_modules': GetInstalledModules(),     # Запись установленных модулей
             'status': status})
 
 
@@ -549,7 +549,7 @@ if __name__ == '__main__':
     try:  # Running a program through an exception
         import enc_module_obs
         import lister_module_obs
-        from stars_module import hide_password
+        from stars_module_obs import hide_password
 
         lister_module = lister_module_obs
         ClearTerminal()
@@ -572,7 +572,14 @@ if __name__ == '__main__':
         WriteVersionToFile('ModuleNotFoundError')
         print(green + ' - Installing the missing module - ' + mc)
         sleep(1)
-        UpdateProgram(None, None, None, None, None, False)
+
+        def actions_for_install(file):  # Действия для установки
+            os.system('cp pwManager/' + file + ' . ; ')
+        os.system('git clone https://github.com/Berliner187/pwManager')
+        actions_for_install('stars_module.py')
+        actions_for_install('enc_module_obs.py')
+        actions_for_install('lister_module_obs.py')
+        os.system('rm -r pwManager/ -f')
         RestartProgram()
     except ValueError:  # With this error (not entered value), the program is restarted
         WriteVersionToFile('ValueError')
