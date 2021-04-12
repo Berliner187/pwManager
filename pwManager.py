@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.10 Stable For Linux (SFL)
+# Password manager v1.4.5.11 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -23,7 +23,7 @@ def ClearTerminal():
 # Colours
 yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
 
-version = 'v1.4.5.10'    # Version program
+version = 'v1.4.5.11'    # Version program
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
@@ -203,6 +203,8 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
     else:
         if status == bool(True):    # Если аргумент status истинен, то идет запрос пароля
             master_password = stars_module.mask_password(yellow + ' -- Your master-password: ' + mc)
+            if master_password == 'x':
+                quit()
             # Проверка хэша пароля
             enc_pas = enc_module_obs.EncryptionByTwoLevels(master_password, master_password)
             master_password_from_file = open(file_hash_password)
@@ -498,18 +500,20 @@ if __name__ == '__main__':
         lister_module = lister_module_obs
         ClearTerminal()
         print(blue, '\n Password Manager', version, 'Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
-        file_version = main_folder + '.version'
-        if os.path.exists(file_version) == bool(False):
-            with open(file_version, 'w') as updates:
-                updates.write(version)
-                updates.close()
+        file_version = main_folder + '.version'     # Файл с версией программы
+
+        def WriteVersionToFile():   # Функция записи в файл версии
+            global file_version
+            with open(file_version, 'a') as write_version:
+                write_version.write(version)  # Запись текущей версии
+                write_version.close()
+
+        if os.path.exists(file_version) == bool(False):     # Создание, если его нет
+            WriteVersionToFile()    # Запись версии в файл
         else:
-            with open(file_version) as upd:
-                latest_version = upd.readline()
-            if version != latest_version:
-                with open(file_version, 'w') as updates:
-                    updates.write(version)
-                    updates.close()
+            with open(file_version) as updates:
+                if version != updates.readline():   # Если не совпадают, перезаписывается актуальной версией
+                    WriteVersionToFile()   # Запись версии в файл
         MainFun()
     except ModuleNotFoundError:
         print(green + ' - Installing the missing module - ' + mc)
