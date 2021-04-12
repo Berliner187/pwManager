@@ -188,7 +188,7 @@ def ShowContent(key, master_password, lister):
         print(blue +
               '\n  - Enter "-r" to restart, "-x" to exit'
               '\n  - Enter "-a" to add new resource'
-              '\n  - Enter "-c" to change master-password'
+              '\n  - Enter "-c" to change master-password ' + red + 'BETA' + blue,
               '\n  - Enter "-d" to remove resource'
               '\n  - Enter "-u" to update program'
               '\n  - Enter "-n" to go to notes'
@@ -308,7 +308,19 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 RestartProgram()  # Restart program
             elif change_resource_or_actions == '-c':
                 ClearTerminal()
-                confirm_master_password = getpass()
+                # Сверяются хеши паролей
+                confirm_master_password = hide_password(yellow + ' -- Enter your master-password: ' + mc)
+                hash_confirm_master_password = enc_module_obs.EncryptionByTwoLevels(confirm_master_password, master_password)
+                saved_master_password = open(file_hash_password)
+                enc_pas_from_file = ''
+                for hash_pas in saved_master_password.readlines():
+                    enc_pas_from_file = hash_pas
+                if hash_confirm_master_password != enc_pas_from_file:
+                    print(red + '\n --- Wrong password --- ' + mc)
+                    sleep(1)
+                else:
+                    pass    # Допилить фичу
+                ShowContent(key, master_password, lister_row)
             elif change_resource_or_actions == '-d':    # Удаление ресурса
                 print(blue + '\n -- Change by number resource -- ' + mc)
                 change_res_by_num = int(input(yellow + ' - Resource number: ' + mc))
