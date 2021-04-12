@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Password manager v1.4.5.11 Stable For Linux (SFL)
+# Password manager v1.4.5.12 Stable For Linux (SFL)
 # Resources and all data related to them are encrypted with a single password
 # by Berliner187
 import os, sys
@@ -23,7 +23,7 @@ def ClearTerminal():
 # Colours
 yellow, blue, purple, green, mc, red = "\033[33m", "\033[36m", "\033[35m", "\033[32m", "\033[0m", "\033[31m"
 
-version = 'v1.4.5.11'    # Version program
+version = 'v1.4.5.12'    # Version program
 symbols_for_password = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-='  # List of all symbols
 main_symbols = """ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-=+!@#$%^&*(){}[]'<>,.|/?"""
 
@@ -90,7 +90,7 @@ def GreatingDependingOnDateTime(master_password):
 
 
 def SaveDataToFile(resource, login, password, key, lister, master_password):
-    """ Шифрование логина и пароля. Сохранение в csv-файл """
+    """ Шифрование логина и пароля. Запись в csv-файл """
     with open(file_date_base, mode="a", encoding='utf-8') as data:
         writer = DictWriter(data, fieldnames=['resource', 'login', 'password'])
         if check_file_date_base == bool(False):
@@ -108,8 +108,8 @@ def SaveDataToFile(resource, login, password, key, lister, master_password):
 def ConfirmUserPass():
     """ Подтвержение пользовательского пароля """
     def UserInput():
-        user_password = stars_module.mask_password(' Password: ')
-        user_confirm_password = stars_module.mask_password(' Confirm password: ')
+        user_password = hide_password(' Password: ')
+        user_confirm_password = hide_password(' Confirm password: ')
         return user_password, user_confirm_password
     print(blue + '\n Minimum password length 8 characters' + mc)
     password, confirm_password = UserInput()
@@ -136,6 +136,10 @@ def ChangeTypeOfPass(resource, login, key, master_password, lister):
         for pas_elem in range(length):
             pas_gen += random.choice(symbols_for_password)  # Password Adding random symbols from lister
         return pas_gen  # Возвращает пароль
+
+    print('\n',
+          green + ' 1' + yellow + ' - Generation new password \n',
+          green + ' 2' + yellow + ' - Save your password      \n', mc)
     change = int(input('Change (1/2): '))
     if change == 1:  # Generation new password
         length = int(input(' Length password (Minimum 8): '))
@@ -184,6 +188,7 @@ def ShowContent(key, master_password, lister):
         print(blue +
               '\n  - Enter "-r" to restart, "-x" to exit'
               '\n  - Enter "-a" to add new resource'
+              '\n  - Enter "-c" to change master-password'
               '\n  - Enter "-d" to remove resource'
               '\n  - Enter "-u" to update program'
               '\n  - Enter "-n" to go to notes'
@@ -202,8 +207,8 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
         return key, lister_row, master_password
     else:
         if status == bool(True):    # Если аргумент status истинен, то идет запрос пароля
-            master_password = stars_module.mask_password(yellow + ' -- Your master-password: ' + mc)
-            if master_password == 'x':
+            master_password = hide_password(yellow + ' -- Your master-password: ' + mc)
+            if master_password == 'x':  # Досрочный выход из программы
                 quit()
             # Проверка хэша пароля
             enc_pas = enc_module_obs.EncryptionByTwoLevels(master_password, master_password)
@@ -223,6 +228,8 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
 
 def DataForResource(master_password):
     """ Данные для сохранения (ресурс, логин, пароль) """
+    ClearTerminal()
+    print(green, '\n   --- Add new resource ---   ', '\n' * 3, mc)  # Текст запроса ввода данных о ресурсе
     resource = input(yellow + ' Resource: ' + mc)
     login = input(yellow + ' Login: ' + mc)
     key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(master_password, False)
@@ -230,25 +237,36 @@ def DataForResource(master_password):
 
 
 def UpdateProgram(master_password, key, lister_row, resource, login, status):
-    main_file = 'pwManager.py'
+    main_file = 'pwManager.py'  # Главный файл программы
+    remove_main_folder = 'rm -r pwManager/ -f'
     os.system('git clone https://github.com/Berliner187/pwManager')
     ClearTerminal()
+
     if os.path.getsize(main_file) != os.path.getsize('pwManager/' + main_file):
         install_or_no = input(yellow + ' - Install? (y/n): ' + mc)
+        new_folder_pm = 'pwManager/'    # Новая папка из репозитория проекта
         if install_or_no == 'y':
-            os.system('cp pwManager/' + main_file + ' . ; rm -r pwManager/ -f')
+
+            def actions_for_install(file):  # Действия для установки
+                os.system('cp ' + new_folder_pm + file + ' . ; ')
+
+            actions_for_install(main_file)
+            actions_for_install('stars_module.py')
+            actions_for_install('enc_module_obs.py')
+            actions_for_install('lister_module_obs.py')
+
             ClearTerminal()
-            if status == bool(True):
+            if status == bool(True):    # Если нет файла с ресурсами, программа перезапускается
                 RestartProgram()
         else:
-            os.system('rm -r pwManager/ -f')
+            os.system(remove_main_folder)
             if status == bool(True):   # Если статус требует True
                 ShowContent(key, master_password, lister_row)
                 DecryptionBlock(master_password, key, lister_row, resource, login)
     else:
         ClearTerminal()
         print(yellow + ' -- Nothing to upgrade, you have latest update -- ' + mc)
-        os.system('rm -r pwManager/ -f')
+        os.system(remove_main_folder)
         sleep(.7)
 
 
@@ -261,20 +279,10 @@ if check_file_notes == bool(False):     # Создание файла с зам�
 def DecryptionBlock(master_password, key, lister_row, resource, login):
     """ Show resources and decrypt them with keys """
     def AddResourceData(resource, login, key, master_password, lister_row):
-        def TextChangePassword():
-            print(green + ' 1' + yellow + ' - Generation new password \n' +
-                  green + ' 2' + yellow + ' - Save your password \n' + mc)
-
-        ClearTerminal()
-        text_add = (green, '\n   --- Add new resource ---   ', '\n' * 3, mc)
-        print(' '.join(text_add))
-
         if check_file_date_base == bool(False):
-            TextChangePassword()
             ChangeTypeOfPass(resource, login, key, master_password, lister_row)
         else:
             key, lister_row, resource, login = DataForResource(master_password)  # Ввод данных для ресурса
-            TextChangePassword()
             ChangeTypeOfPass(resource, login, key, master_password, lister_row)
             DecryptionBlock(master_password, key, lister_row, resource, login)
 
@@ -298,6 +306,9 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 sleep(.5)
                 ClearTerminal()
                 RestartProgram()  # Restart program
+            elif change_resource_or_actions == '-c':
+                ClearTerminal()
+                confirm_master_password = getpass()
             elif change_resource_or_actions == '-d':    # Удаление ресурса
                 print(blue + '\n -- Change by number resource -- ' + mc)
                 change_res_by_num = int(input(yellow + ' - Resource number: ' + mc))
@@ -491,18 +502,43 @@ if __name__ == '__main__':
     try:  # Running a program through an exception
         import enc_module_obs
         import lister_module_obs
-        import stars_module
+        from stars_module import hide_password
 
         lister_module = lister_module_obs
         ClearTerminal()
         print(blue, '\n Password Manager', version, 'Stable For Linux (SFL) \n by Berliner187' '\n', mc)  # Start text
-        file_version = main_folder + '.version'     # Файл с версией программы
+        file_version = main_folder + '.version.log'     # Файл с версией программы
 
         def WriteVersionToFile():   # Функция записи в файл версии
             global file_version
-            with open(file_version, 'a') as write_version:
-                write_version.write(version)  # Запись текущей версии
-                write_version.close()
+            with open(file_version, mode="a", encoding='utf-8') as data:
+                log_writer = DictWriter(data, fieldnames=['version', 'datetime_install', 'installed_modules'])
+                if os.path.exists(file_version) == bool(False):
+                    log_writer.writeheader()  # Запись заголовков
+
+                def GetDateTime():      # Получение и форматирование текущего времени
+                    hms = datetime.datetime.today()  # Дата и время
+                    day, month, year = hms.day, hms.month, hms.year     # Число, месяц, год
+                    hour = hms.hour  # Формат часов
+                    minute = hms.minute  # Формат минут
+                    second = hms.second  # Формат секунд
+                    time_format = str(hour) + ':' + str(minute) + ':' + str(second)
+                    date_format = day, month, year
+                    return time_format, date_format
+
+                def GetInstalledModules():
+                    file_type = '.py'
+                    any_file = os.listdir('.')
+                    modules = []
+                    for file in any_file:
+                        if file.endswith(file_type):
+                            modules.append(file)
+                    return modules
+
+                log_writer.writerow({
+                    'version': version,     # Запись версии
+                    'datetime_install': GetDateTime(),     # Запись даты и времени
+                    'installed_modules': GetInstalledModules()})
 
         if os.path.exists(file_version) == bool(False):     # Создание, если его нет
             WriteVersionToFile()    # Запись версии в файл

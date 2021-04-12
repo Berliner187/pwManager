@@ -3,7 +3,7 @@ import tty
 import termios
 
 
-def getch():
+def get_something():
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
@@ -14,12 +14,12 @@ def getch():
     return ch
 
 
-def mask_password(prompt, mask='*'):
+def hide_password(prompt, mask='*'):
     entered_password = []
     sys.stdout.write(prompt)
     sys.stdout.flush()
     while True:
-        key = ord(getch())
+        key = ord(get_something())
         if key == 13:
             sys.stdout.write('\n')
             return ''.join(entered_password)
