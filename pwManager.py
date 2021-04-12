@@ -221,16 +221,8 @@ def AuthConfirmPasswordAndGetUniqueSewnKey(master_password, status):
         return key, lister_row, master_password
 
 
-def TextAddNewResource():
-    ClearTerminal()
-    text_add = (green, '\n   --- Add new resource ---   ', '\n' * 3, mc)
-    print(' '.join(text_add))
-
-
 def DataForResource(master_password):
     """ Данные для сохранения (ресурс, логин, пароль) """
-    if check_file_date_base == bool(False):
-        TextAddNewResource()
     resource = input(yellow + ' Resource: ' + mc)
     login = input(yellow + ' Login: ' + mc)
     key, lister_row, master_password = AuthConfirmPasswordAndGetUniqueSewnKey(master_password, False)
@@ -272,7 +264,11 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
         def TextChangePassword():
             print(green + ' 1' + yellow + ' - Generation new password \n' +
                   green + ' 2' + yellow + ' - Save your password \n' + mc)
-        TextAddNewResource()
+
+        ClearTerminal()
+        text_add = (green, '\n   --- Add new resource ---   ', '\n' * 3, mc)
+        print(' '.join(text_add))
+
         if check_file_date_base == bool(False):
             TextChangePassword()
             ChangeTypeOfPass(resource, login, key, master_password, lister_row)
