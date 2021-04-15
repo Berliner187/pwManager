@@ -21,8 +21,8 @@ def system_action(action):
     elif action == 'clear':
         os.system('cls' if os.name == 'nt' else 'clear')
     elif action == 'either':
-        os.execv(sys.executable, [sys.executable] + sys.argv)
         os.system('cls' if os.name == 'nt' else 'clear')
+        os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
 # Colours
@@ -432,18 +432,16 @@ def launcher():
 if __name__ == '__main__':
     system_action('clear')
     try:
-        from logo import elba
-        from enc_module import enc_data, dec_data
+        from logo_obs import elba
+        from enc_obs import enc_data, dec_data
         from datetime_obs import greeting
-        from stars_module_obs import hide_password
-        from update import update
+        from stars_obs import hide_password
+        from update_obs import update
 
-        elba()
         print(blue, "\n Password Manager", version, "Stable For Linux (SFL) \n by Berliner187 ", '\n' * 3, mc)
+        elba()
         launcher()
 
-    except ModuleNotFoundError:
-        pass
     except ValueError:
         print(red, '\n' + ' --- Critical error, program is restarted --- ', mc)
         sleep(1)
