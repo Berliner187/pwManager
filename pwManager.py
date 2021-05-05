@@ -190,9 +190,8 @@ def ShowContent(key, master_password, lister):
         print(blue +
               '\n  - Enter "-r" to restart, "-x" to exit'
               '\n  - Enter "-a" to add new resource'
-              '\n  - Enter "-c" to change master-password ' + red + 'BETA' + blue,
               '\n  - Enter "-d" to remove resource'
-              '\n  - Enter "-u" to update program, "-m" to check modules'
+              '\n  - Enter "-u" to update program'
               '\n  - Enter "-n" to go to notes'
               '\n  - Enter "-z" to remove ALL data',
               yellow, '\n Select resource by number \n', mc)
@@ -308,13 +307,6 @@ def DecryptionBlock(master_password, key, lister_row, resource, login):
                 sleep(.5)
                 ClearTerminal()
                 RestartProgram()  # Restart program
-            elif change_resource_or_actions == '-m':    # Тоже допилить
-                file_type = 'obs.py'
-                any_file = os.listdir('.')
-                modules = []
-                for file in any_file:
-                    if file.endswith(file_type):
-                        modules.append(file)
             elif change_resource_or_actions == '-c':
                 ClearTerminal()
                 # Сверяются хеши паролей
